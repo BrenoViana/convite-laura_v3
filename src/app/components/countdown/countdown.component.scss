@@ -1,0 +1,11 @@
+﻿.countdown{
+  display:flex; justify-content:center; gap:10px; margin: 10px 0 6px;
+  .box{
+    width:82px; padding:10px 0; text-align:center; border-radius:16px;
+    background:#fff; border:2px solid var(--sakura-pink);
+    box-shadow: 0 8px 20px rgba(255,183,197,.18);
+    span{ display:block; font-size:28px; font-weight:700; }
+    small{ display:block; opacity:.8 }
+  }
+}
+.msg{ text-align:center; margin:0; }

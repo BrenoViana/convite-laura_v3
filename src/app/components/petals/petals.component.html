@@ -1,0 +1,10 @@
+﻿<div class="petals" aria-hidden="true">
+  <span class="petal" *ngFor="let p of petals"
+        [style.left.%]="p.left"
+        [style.animationDelay.s]="p.delay"
+        [style.animationDuration.s]="p.duration"
+        [style.width.px]="p.size"
+        [style.height.px]="p.size * .75"
+        [style.setProperty]="'--drift:'+p.drift+'px'"
+        [style.setProperty]="'--rot:'+p.rotate+'deg'"></span>
+</div>

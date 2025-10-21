@@ -1,0 +1,18 @@
+﻿.hero{
+  text-align: center;
+  padding-top: 24px;
+  padding-bottom: 8px;
+}
+.title{
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(40px, 9vw, 88px);
+  color: #d56a86;
+  line-height: 1;
+}
+.subtitle{ font-weight: 600; color: #333; margin-top: 4px; }
+.date, .address{ margin: 6px 0; opacity: .9; }
+.cta{
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  margin: 12px 0 24px;
+}
+.footer{ text-align:center; padding: 24px 0 40px; opacity: .8; }

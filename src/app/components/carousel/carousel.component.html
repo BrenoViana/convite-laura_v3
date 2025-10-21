@@ -1,0 +1,11 @@
+﻿<div class="carousel" (pointerup)="onPointerUp()"
+     (pointermove)="onPointerMove($event)" (pointerdown)="onPointerDown($event)">
+  <div class="track" #track>
+    <figure *ngFor="let img of images; index as i" class="slide">
+      <img [src]="img" [alt]="'Foto '+(i+1)+' da Laura'">
+    </figure>
+  </div>
+  <div class="dots" *ngIf="images?.length > 1">
+    <button *ngFor="let _ of images; index as i" [class.active]="i===index" (click)="index=i; (track as any).style.transform = 'translateX(-'+(index*100)+'%)'"></button>
+  </div>
+</div>

@@ -1,0 +1,25 @@
+﻿<petals></petals>
+
+<header class="hero container">
+  <h1 class="title">Laura</h1>
+  <h2 class="subtitle">1 Aninho</h2>
+  <p class="date">19/12/2025 • 19:00</p>
+  <p class="address">{{ env.addressText }}</p>
+</header>
+
+<section class="container">
+  <carousel [images]="env.photos" autoPlay="true" [intervalMs]="3500"></carousel>
+</section>
+
+<section class="container">
+  <countdown [targetISO]="env.eventDateISO"></countdown>
+</section>
+
+<section class="container cta">
+  <a class="button" [href]="mapsUrl" target="_blank" rel="noopener">Abrir no Google Maps</a>
+  <a class="button" [href]="icsUrl" download="Laura-1Aninho-19-12-2025.ics">Adicionar ao calendário</a>
+</section>
+
+<footer class="container footer">
+  <small>Com carinho, família da Laura 💗</small>
+</footer>
