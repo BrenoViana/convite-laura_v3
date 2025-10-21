@@ -1,0 +1,18 @@
+﻿.sakura-swiper {
+  width: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(0,0,0,.10);
+}
+.slide {
+  margin: 0;
+  min-width: 100%;
+  aspect-ratio: 3 / 2;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+}
+/* bullets do Swiper */
+:host ::ng-deep .swiper-pagination-bullet { background: rgba(0,0,0,.25); opacity: 1; }
+:host ::ng-deep .swiper-pagination-bullet-active { background: var(--sakura-pink); }

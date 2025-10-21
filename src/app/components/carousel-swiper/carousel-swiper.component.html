@@ -1,0 +1,13 @@
+﻿<swiper
+  [loop]="images.length > 1"
+  [autoplay]="{ delay: 3500, disableOnInteraction: false }"
+  [pagination]="{ clickable: true }"
+  [a11y]="{ enabled: true }"
+  class="sakura-swiper"
+>
+  <ng-template swiperSlide *ngFor="let img of images; index as i">
+    <figure class="slide">
+      <img [src]="img" [alt]="'Foto ' + (i+1) + ' da Laura'">
+    </figure>
+  </ng-template>
+</swiper>

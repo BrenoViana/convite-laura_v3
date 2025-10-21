@@ -1,13 +1,13 @@
 ﻿import { Component } from '@angular/core';
-import { CarouselComponent } from './components/carousel/carousel.component';
 import { CountdownComponent } from './components/countdown/countdown.component';
 import { PetalsComponent } from './components/petals/petals.component';
+import { CarouselSwiperComponent } from './components/carousel-swiper/carousel-swiper.component';
 import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CarouselComponent, CountdownComponent, PetalsComponent],
+  imports: [CarouselSwiperComponent, CountdownComponent, PetalsComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
