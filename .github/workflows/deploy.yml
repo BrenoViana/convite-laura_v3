@@ -1,4 +1,4 @@
-﻿name: Build & Deploy (Pages)
+﻿name: Deploy to GitHub Pages
 
 on:
   push:
@@ -10,24 +10,22 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-
-      - name: Install
-        run: npm ci
-
-      - name: Build (base-href para Pages)
-        run: npx ng build --base-href /convite-laura_v3/
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+          node-version: 20
+      - run: npm ci
+      - run: npm run build:gh
+      - run: npm run gh:post
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/convite-laura_v3
 
