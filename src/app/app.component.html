@@ -2,11 +2,13 @@
 
 <section class="container">
   <article class="card invitation">
-    <div class="badge" role="status" aria-label="1 aninho">
-      <span class="dot" aria-hidden="true">🌸</span>
-      <span class="badge-text">1 aninho</span>
+    <!-- pílula “1 aninho” centralizada -->
+    <div class="badge-wrap">
+      <div class="badge event-badge" role="status" aria-label="1 aninho">
+        <span class="dot" aria-hidden="true">🌸</span>
+        <span>1 aninho</span>
+      </div>
     </div>
-
 
     <h1 class="title">Laura faz aniversário!</h1>
     <p class="subtitle">Um ano de amor e descobertas</p>
@@ -35,10 +37,10 @@
         <div class="ico" aria-hidden="true">📍</div>
         <div class="col">
           <div class="label">Local</div>
-          <p class="address">
-            <span class="main">{{ addressMain }}</span>
+          <div class="address">
+            <span class="addr">{{ addressMain }}<span *ngIf="cep">, {{ cep }}</span></span>
             <span *ngIf="venue" class="venue-pill">{{ venue }}</span>
-          </p>
+          </div>
         </div>
       </div>
     </section>

@@ -11,7 +11,15 @@
     "assets/photos/01.webp",
     "assets/photos/02.webp",
     "assets/photos/03.webp",
-    "assets/photos/04.webp"
+    "assets/photos/04.webp",
+    "assets/photos/05.webp",
+    "assets/photos/06.webp",
+    "assets/photos/07.webp",
+    "assets/photos/08.webp"/*,
+    "assets/photos/09.webp",
+    "assets/photos/10.webp",
+    "assets/photos/11.webp",
+    "assets/photos/12.webp"*/
   ],
   giftListUrl: "#",
   rsvpUrl: "#"

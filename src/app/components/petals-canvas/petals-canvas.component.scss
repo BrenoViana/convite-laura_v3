@@ -1,3 +1,18 @@
-﻿:host{ position:fixed; inset:0; pointer-events:none; z-index:0; }
-.petals-canvas{ display:block; width:100%; height:100%; }
-@media (prefers-reduced-motion: reduce){ :host{ display:none; } }
+﻿/* Agora fica NA FRENTE de tudo, mas não bloqueia cliques */
+:host{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;   /* conteúdo por baixo continua clicável */
+  z-index: 9999;          /* sobrepõe o restante */
+}
+
+.petals-canvas{
+  display:block;
+  width:100%;
+  height:100%;
+}
+
+/* Se o usuário preferir menos movimento, ocultamos */
+@media (prefers-reduced-motion: reduce){
+  :host{ display:none; }
+}

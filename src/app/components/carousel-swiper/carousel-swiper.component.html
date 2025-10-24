@@ -1,34 +1,15 @@
-﻿<swiper-container
-  #swc
-  init="false"
-  class="sakura-swiper"
-  slides-per-view="1"
-  [attr.loop]="(images && images.length > 1) ? 'true' : 'false'"
-  pagination="true"
-  autoplay="true"
-  autoplay-delay="3500"
-  autoplay-disable-on-interaction="false"
-  observer="true"
-  observe-parents="true"
-  a11y="true"
->
+﻿<swiper-container #swc init="false" class="sakura-swiper" slides-per-view="1"
+  [attr.loop]="(images && images.length > 1) ? 'true' : 'false'" pagination="true" autoplay="true" autoplay-delay="3500"
+  autoplay-disable-on-interaction="false" observer="true" observe-parents="true" a11y="true">
   <ng-container *ngIf="images && images.length; else noImgs">
     <swiper-slide *ngFor="let img of images; index as i">
       <figure class="slide" [style.--aspect]="aspect">
         <picture>
           <source [attr.srcset]="toAvif(buildSrcSet(img))" type="image/avif">
           <source [attr.srcset]="buildSrcSet(img)" type="image/webp">
-          <img
-            [src]="img"
-            [attr.sizes]="buildSrcSet(img) ? sizes() : null"
-            loading="lazy"
-            decoding="async"
-            (load)="onImgLoad($event, i)"
-            (error)="onImgError($event)"
-            [class.img-cover]="true"
-            [class.img-contain]="getFitClass(i) === 'img-contain'"
-            alt="Foto do carrossel"
-          />
+          <img [src]="img" [attr.sizes]="buildSrcSet(img) ? sizes() : null" loading="lazy" decoding="async"
+            (load)="onImgLoad($event, i)" (error)="onImgError($event)" [class.img-cover]="true"
+            [class.img-contain]="getFitClass(i) === 'img-contain'" alt="Foto do carrossel" />
         </picture>
       </figure>
     </swiper-slide>
@@ -39,9 +20,7 @@
       <figure class="slide" [style.--aspect]="aspect">
         <img
           src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Crect width='100%25' height='100%25' fill='%23FFF7FA'/%3E%3C/svg%3E"
-          class="img-contain"
-          alt="Sem imagens"
-        />
+          class="img-contain" alt="Sem imagens" />
       </figure>
     </swiper-slide>
   </ng-template>
