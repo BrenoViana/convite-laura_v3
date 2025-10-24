@@ -1,25 +1,55 @@
-﻿<petals></petals>
-
-<header class="hero container">
-  <h1 class="title">Laura</h1>
-  <h2 class="subtitle">1 Aninho</h2>
-  <p class="date">19/12/2025 • 19:00</p>
-  <p class="address">{{ env.addressText }}</p>
-</header>
+﻿<petals-canvas></petals-canvas>
 
 <section class="container">
-  <carousel-swiper [images]="env.photos"></carousel-swiper>
-</section>
+  <article class="card invitation">
+    <div class="badge" role="status" aria-label="1 aninho">
+      <span class="dot" aria-hidden="true">🌸</span>
+      <span class="badge-text">1 aninho</span>
+    </div>
 
-<section class="container">
-  <countdown [targetISO]="env.eventDateISO"></countdown>
-</section>
 
-<section class="container cta">
-  <a class="button" [href]="mapsUrl" target="_blank" rel="noopener">Abrir no Google Maps</a>
-  <a class="button" [href]="icsUrl" download="Laura-1Aninho-19-12-2025.ics">Adicionar ao calendário</a>
-</section>
+    <h1 class="title">Laura faz aniversário!</h1>
+    <p class="subtitle">Um ano de amor e descobertas</p>
 
-<footer class="container footer">
-  <small>Com carinho, família da Laura 💗</small>
-</footer>
+    <countdown [targetISO]="env.eventDateISO"></countdown>
+
+    <div class="media">
+      <div class="ratio">
+        <carousel-swiper [images]="photosSafe"></carousel-swiper>
+      </div>
+    </div>
+
+    <section class="info">
+      <div class="row">
+        <div class="ico" aria-hidden="true">🗓️</div>
+        <div class="col">
+          <div class="label">Quando</div>
+          <div class="chips">
+            <span class="chip">{{ dateStr }}</span>
+            <span class="chip">{{ timeStr }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="ico" aria-hidden="true">📍</div>
+        <div class="col">
+          <div class="label">Local</div>
+          <p class="address">
+            <span class="main">{{ addressMain }}</span>
+            <span *ngIf="venue" class="venue-pill">{{ venue }}</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="actions">
+      <a class="btn" [href]="mapsUrl" target="_blank" rel="noopener">Abrir no mapa</a>
+      <a class="btn" [href]="icsUrl" download="Laura-1Aninho-19-12-2025.ics">Salvar na agenda</a>
+      <a class="btn" [href]="env.giftListUrl || '#'" target="_blank" rel="noopener">Lista de presentes</a>
+      <a class="btn" [href]="env.rsvpUrl || '#'" target="_blank" rel="noopener">Confirmar presença</a>
+    </section>
+
+    <footer class="footnote">Sua presença vai deixar tudo ainda mais especial ✨</footer>
+  </article>
+</section>

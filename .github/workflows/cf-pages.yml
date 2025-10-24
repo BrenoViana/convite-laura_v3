@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Pages
+﻿name: Deploy to Cloudflare Pages
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
 
       - name: Install deps
         run: npm ci
@@ -34,5 +34,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: convite-laura_v3
-          directory: dist/convite-laura_v3/browser
+          directory: dist/convite-laura_v3
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+

@@ -1,34 +1,28 @@
-﻿import { CommonModule } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit, signal } from '@angular/core';
-import { interval, Subscription } from 'rxjs';
+﻿import { Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { CommonModule } from "@angular/common";
 
 @Component({
-  selector: 'countdown',
+  selector: "countdown",
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './countdown.component.html',
-  styleUrls: ['./countdown.component.scss']
+  templateUrl: "./countdown.component.html",
+  styleUrls: ["./countdown.component.scss"]
 })
 export class CountdownComponent implements OnInit, OnDestroy {
-  @Input({ required: true }) targetISO!: string;
+  @Input() targetISO!: string;
+  days = 0; hours = 0; minutes = 0; seconds = 0;
+  private t?: any;
 
-  d = signal(0); h = signal(0); m = signal(0); s = signal(0);
-  private sub?: Subscription;
+  ngOnInit(){ this.tick(); this.t = setInterval(() => this.tick(), 1000); }
+  ngOnDestroy(){ if(this.t) clearInterval(this.t); }
 
-  ngOnInit(): void {
+  private tick(){
     const target = new Date(this.targetISO).getTime();
-    const tick = () => {
-      const now = Date.now();
-      const diff = Math.max(0, target - now);
-      const totalSec = Math.floor(diff / 1000);
-      const days = Math.floor(totalSec / 86400);
-      const hours = Math.floor((totalSec % 86400) / 3600);
-      const minutes = Math.floor((totalSec % 3600) / 60);
-      const seconds = totalSec % 60;
-      this.d.set(days); this.h.set(hours); this.m.set(minutes); this.s.set(seconds);
-    };
-    tick();
-    this.sub = interval(1000).subscribe(tick);
+    const now = Date.now();
+    let diff = Math.max(0, Math.floor((target - now)/1000));
+    this.days = Math.floor(diff / 86400); diff -= this.days*86400;
+    this.hours = Math.floor(diff / 3600); diff -= this.hours*3600;
+    this.minutes = Math.floor(diff / 60); diff -= this.minutes*60;
+    this.seconds = diff;
   }
-  ngOnDestroy(): void { this.sub?.unsubscribe(); }
 }

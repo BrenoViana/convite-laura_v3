@@ -1,18 +1,27 @@
-﻿.sakura-swiper {
-  width: 100%;
+﻿/* O container ocupa 100% do espaço do pai (use-o dentro de um wrapper .ratio) */
+:host { display:block; width:100%; height:100%; }
+.sakura-swiper, swiper-container { display:block; width:100%; height:100%; }
+swiper-slide { height:100%; display:flex; }
+
+/* Quadro com razão controlável (padrão 16/9) */
+.slide{
+  --aspect: 1.7777; /* 16/9 fallback */
+  margin:0; width:100%;
+  aspect-ratio: var(--aspect);
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 12px 28px rgba(0,0,0,.10);
-}
-.slide {
-  margin: 0;
-  min-width: 100%;
-  aspect-ratio: 3 / 2;
   background: #fff;
   display: grid;
   place-items: center;
-  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  picture, img { width:100%; height:100%; display:block; }
+  img {
+    object-position: center center;
+  }
+  /* Padrão: cobre todo o quadro */
+  .img-cover  { object-fit: cover; }
+  /* Para retratos/estreitas: caber inteiro, com bordas laterais/superiores se necessário */
+  .img-contain { object-fit: contain; background: #fff; }
 }
-/* bullets do Swiper */
-:host ::ng-deep .swiper-pagination-bullet { background: rgba(0,0,0,.25); opacity: 1; }
-:host ::ng-deep .swiper-pagination-bullet-active { background: var(--sakura-pink); }
+
+/* Dots do Swiper (se estiverem habilitados pelo CSS global do Swiper) */

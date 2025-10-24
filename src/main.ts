@@ -1,15 +1,12 @@
 ﻿import { bootstrapApplication } from "@angular/platform-browser";
-import { provideServiceWorker } from "@angular/service-worker";
-import { provideHttpClient } from "@angular/common/http";
+import { provideRouter } from "@angular/router";
+import { provideAnimations } from "@angular/platform-browser/animations";
 import { AppComponent } from "./app/app.component";
-import { environment } from "./environments/environment";
+
+// Swiper Web Components
+import { register } from "swiper/element/bundle";
+try { register(); } catch {}
 
 bootstrapApplication(AppComponent, {
-  providers: [
-    provideHttpClient(),
-    provideServiceWorker("ngsw-worker.js", {
-      enabled: environment.production,
-      registrationStrategy: "registerWhenStable:30000"
-    })
-  ]
+  providers: [provideAnimations(), provideRouter([])]
 }).catch(err => console.error(err));

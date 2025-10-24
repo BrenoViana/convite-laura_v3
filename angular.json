@@ -1,8 +1,9 @@
-{
+﻿{
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
-    "packageManager": "npm"
+    "packageManager": "npm",
+    "analytics": "a6deb1e4-20a2-4fd9-b48a-9e20406c1934"
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -21,20 +22,18 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/favicon.ico",
+              "src/assets"
             ],
-            "styles": [
-              "src/styles.scss"
-            ]
+            "styles": ["src/styles.scss", "node_modules/swiper/swiper-bundle.min.css"]
           },
           "configurations": {
             "production": {
@@ -78,10 +77,7 @@
         "test": {
           "builder": "@angular/build:karma",
           "options": {
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
+            "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -90,9 +86,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ]
+            "styles": ["src/styles.scss"]
           }
         }
       }
