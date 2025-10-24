@@ -47,6 +47,11 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "sharp": "^0.34.4",
+    "shx": "^0.4.0",
     "typescript": "~5.9.2"
+  },
+  "engines": {
+    "node": ">=20 <21",
+    "npm": ">=10"
   }
 }
