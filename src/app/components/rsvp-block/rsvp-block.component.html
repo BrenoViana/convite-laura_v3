@@ -1,0 +1,50 @@
+<section class="rsvp-card" role="dialog" aria-modal="true" aria-label="Lista de presença">
+  <button class="x" type="button" (click)="closeModal()" aria-label="Fechar">×</button>
+  <h2>Confirme sua presença</h2>
+
+  <form [formGroup]="form" (ngSubmit)="send()">
+    <label class="field">
+      <span>Nome *</span>
+      <input formControlName="name" required placeholder="Seu nome completo" />
+    </label>
+
+    <div class="row">
+      <label class="radio">
+        <input type="radio" formControlName="attending" [value]="true" />
+        Vou! 🎉
+      </label>
+      <label class="radio">
+        <input type="radio" formControlName="attending" [value]="false" />
+        Não vou 😢
+      </label>
+    </div>
+
+    <div class="row">
+      <label class="field">
+        <span>Adultos</span>
+        <input type="number" min="0" formControlName="adults" />
+      </label>
+      <label class="field">
+        <span>Crianças</span>
+        <input type="number" min="0" formControlName="children" />
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Telefone</span>
+      <input formControlName="phone" placeholder="(xx) xxxxx-xxxx" />
+    </label>
+
+    <label class="field">
+      <span>Recado</span>
+      <textarea formControlName="message" rows="3" placeholder="Mensagem opcional"></textarea>
+    </label>
+
+    <button type="submit" [disabled]="form.invalid || sending">
+      {{ sending ? 'Enviando...' : 'Enviar confirmação' }}
+    </button>
+
+    <p class="ok" *ngIf="ok">Recebido, obrigado! 💗</p>
+    <p class="err" *ngIf="err">{{ err }}</p>
+  </form>
+</section>

@@ -1,0 +1,7 @@
+{
+  "/api": {
+    "target": "https://convite-laura-v3.pages.dev/",
+    "secure": true,
+    "changeOrigin": true
+  }
+}
