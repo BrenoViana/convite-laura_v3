@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Output } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from "@angular/forms";
 import { HttpClientModule } from "@angular/common/http";
 import { RsvpService } from "../../services/rsvp.service";
 
@@ -13,18 +13,24 @@ import { RsvpService } from "../../services/rsvp.service";
 })
 export class RsvpBlockComponent {
   @Output() close = new EventEmitter<void>();
-  sending = false; ok = false; err = "";
 
-  form = this.fb.group({
-    name: ["", [Validators.required, Validators.minLength(2)]],
-    attending: [true, Validators.required],
-    adults: [1],
-    children: [0],
-    phone: [""],
-    message: [""],
-  });
+  sending = false;
+  ok = false;
+  err = "";
 
-  constructor(private fb: FormBuilder, private rsvp: RsvpService) {}
+  // Importante: declarar e só inicializar depois da injeção
+  form!: FormGroup;
+
+  constructor(private fb: FormBuilder, private rsvp: RsvpService) {
+    this.form = this.fb.group({
+      name: ["", [Validators.required, Validators.minLength(2)]],
+      attending: [true, Validators.required],
+      adults: [1],
+      children: [0],
+      phone: [""],
+      message: [""],
+    });
+  }
 
   send() {
     this.ok = false; this.err = "";
@@ -35,5 +41,6 @@ export class RsvpBlockComponent {
       error: () => { this.sending = false; this.err = "Falha ao enviar. Tente novamente."; },
     });
   }
+
   closeModal(){ this.close.emit(); }
 }
