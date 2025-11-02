@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RSVP Admin (local)</title>
+<style>
+  body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:24px;color:#eaeaea;background:#0f1115}
+  .card{background:#161a22;border:1px solid #22272e;border-radius:12px;padding:16px;max-width:1100px}
+  input,button{font:inherit;padding:10px;border-radius:8px;border:1px solid #2a2f3a;background:#0f1115;color:#eaeaea}
+  button{cursor:pointer}
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th,td{padding:8px;border-bottom:1px solid #262b36}
+  th{position:sticky;top:0;background:#161a22}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .muted{opacity:.7}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Lista de Presença – Admin (uso local)</h2>
+  <p class="muted">Seu token não será enviado para nenhum lugar além da requisição à API.</p>
+  <div class="row" style="margin-bottom:12px">
+    <input id="token" type="password" placeholder="Cole o ADMIN_TOKEN aqui" style="min-width:380px" />
+    <button id="btnLoad">Carregar lista</button>
+    <button id="btnCSV">Baixar CSV</button>
+    <button id="btnJSON">Baixar JSON</button>
+    <button id="btnClear" style="margin-left:auto;background:#3a0f12;border-color:#5c1116">⚠️ Limpar tudo</button>
+  </div>
+  <div id="totais" class="muted">—</div>
+  <div style="overflow:auto;max-height:70vh">
+    <table id="tbl">
+      <thead>
+        <tr><th>Data/Hora</th><th>Nome</th><th>Presença</th><th>Adultos</th><th>Crianças</th><th>Telefone</th><th>Mensagem</th><th>IP</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<script>
+const API = "https://laura.alves.tec.br/api/rsvp";
+const $ = sel => document.querySelector(sel);
+const fmt = s => new Date(s).toLocaleString();
+
+async function authFetch(url, token, opt={}) {
+  const headers = new Headers(opt.headers||{});
+  headers.set("Authorization", "Bearer " + token);
+  return fetch(url, {...opt, headers});
+}
+
+async function load(){
+  const t = $("#token").value.trim();
+  if(!t){ alert("Informe o ADMIN_TOKEN"); return; }
+  const r = await authFetch(`${API}?list=1`, t);
+  if(!r.ok){ alert("Falha ao buscar: " + r.status); return; }
+  const data = await r.json();
+  const tb = $("#tbl tbody");
+  tb.innerHTML = "";
+  let adultos=0, criancas=0, presentes=0;
+  for(const x of data){
+    adultos += +x.adults||0;
+    criancas += +x.children||0;
+    if(x.attending) presentes++;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${fmt(x.ts)}</td><td>${x.name||""}</td><td>${x.attending?"Sim":"Não"}</td>
+      <td>${x.adults??""}</td><td>${x.children??""}</td><td>${x.phone??""}</td>
+      <td>${(x.message||"").replaceAll("<","&lt;")}</td><td>${x.ip||""}</td>`;
+    tb.appendChild(tr);
+  }
+  $("#totais").textContent = `Registros: ${data.length} • Presentes: ${presentes} • Adultos: ${adultos} • Crianças: ${criancas}`;
+}
+
+async function download(kind){
+  const t = $("#token").value.trim();
+  if(!t){ alert("Informe o ADMIN_TOKEN"); return; }
+  const url = `${API}/export?format=${kind}`;
+  const r = await authFetch(url, t);
+  if(!r.ok){ alert("Falha ao exportar: " + r.status); return; }
+  const blob = await r.blob();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `rsvp-${new Date().toISOString().slice(0,10)}.${kind}`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function clearAll(){
+  const t = $("#token").value.trim();
+  if(!t){ alert("Informe o ADMIN_TOKEN"); return; }
+  if(!confirm("Tem certeza que deseja APAGAR tudo?")) return;
+  const r = await authFetch(`${API}/clear?confirm=YES`, t, {method:"POST"});
+  if(r.status===204){ alert("OK, limpo."); load(); }
+  else { alert("Falha ao limpar: " + r.status); }
+}
+
+$("#btnLoad").onclick = load;
+$("#btnCSV").onclick  = () => download("csv");
+$("#btnJSON").onclick = () => download("json");
+$("#btnClear").onclick= clearAll;
+</script>
+</body>
+</html>
