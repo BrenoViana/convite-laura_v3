@@ -11,7 +11,7 @@
 body{margin:0;font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;color:var(--text);background:
 radial-gradient(1200px 800px at -10% -10%,rgba(255,143,177,.18),transparent 60%),
 radial-gradient(900px 600px at 110% 110%,rgba(255,95,135,.12),transparent 60%),var(--bg);padding:24px}
-.wrap{max-width:1120px;margin:0 auto}
+.wrap{max-width:1280px;margin:0 auto}
 .card{background:var(--card);border-radius:16px;padding:24px;border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.02)}
 h1{font-size:clamp(20px,3vw,26px);margin:0 0 10px}.muted{color:var(--muted)}
 .toolbar{display:flex;gap:10px;align-items:center;margin:14px 0 18px;flex-wrap:wrap}
@@ -30,13 +30,14 @@ tbody tr:nth-child(odd){background:rgba(255,255,255,.02)}
 .pill.ok{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.35)}
 .pill.no{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.35)}
 .right{text-align:right}
+.nowrap{white-space:nowrap}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card">
     <h1>Lista de Presença — Admin</h1>
-    <p class="muted">O token fica só no navegador e é usado como Authorization em cada requisição.</p>
+    <p class="muted">Cole o <strong>ADMIN_TOKEN</strong> e use os botões abaixo. (Nada é enviado além das chamadas à API.)</p>
 
     <div class="toolbar">
       <input id="token" type="password" placeholder="Cole aqui o ADMIN_TOKEN" autocomplete="off" />
@@ -53,13 +54,14 @@ tbody tr:nth-child(odd){background:rgba(255,255,255,.02)}
       <table>
         <thead>
           <tr>
-            <th style="min-width:150px">Data/Hora</th>
-            <th style="min-width:220px">Nome</th>
+            <th class="nowrap">Data/Hora</th>
+            <th>Nome</th>
             <th>Presença</th>
             <th class="right">Adultos</th>
             <th class="right">Crianças</th>
-            <th style="min-width:160px">Telefone</th>
-            <th style="min-width:280px">Mensagem</th>
+            <th>Acompanhante?</th>
+            <th>Nome acompanhante</th>
+            <th>Crianças (detalhes)</th>
             <th>IP</th>
           </tr>
         </thead>
@@ -85,15 +87,22 @@ function render(list){
   tbody.innerHTML=''; let pres=0, ad=0, ch=0;
   list.forEach(r=>{
     if(r.attending) pres++; ad+=+r.adults||0; ch+=+r.children||0;
+
+    const companion = !!(r.details && r.details.companion && r.details.companion.name);
+    const compName  = (r.details && r.details.companion && r.details.companion.name) ? r.details.companion.name : '';
+    const kidsArr   = (r.details && Array.isArray(r.details.kids)) ? r.details.kids : [];
+    const kidsStr   = kidsArr.map(k => `${(k.name||'')} (${Number(k.age)||0})`).join('; ');
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${fmtTs(r.ts)}</td>
+      <td class="nowrap">${fmtTs(r.ts)}</td>
       <td>${esc(r.name)}</td>
       <td>${r.attending?'<span class="pill ok">Sim</span>':'<span class="pill no">Não</span>'}</td>
       <td class="right">${r.adults??0}</td>
       <td class="right">${r.children??0}</td>
-      <td>${esc(r.phone)}</td>
-      <td>${esc(r.message)}</td>
+      <td>${companion?'<span class="pill ok">Sim</span>':'<span class="pill no">Não</span>'}</td>
+      <td>${esc(compName)}</td>
+      <td>${esc(kidsStr)}</td>
       <td>${r.ip??''}</td>`;
     tbody.appendChild(tr);
   });
@@ -114,4 +123,3 @@ if (tIn.value) btnLoad.click();
 </script>
 </body>
 </html>
-  
