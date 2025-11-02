@@ -12,3 +12,6 @@
 /assets/icons/cherry.svg
   Cache-Control: public, max-age=31536000, immutable
 
+/tools/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store

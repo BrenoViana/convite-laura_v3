@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Lista de Presença — Admin</title>
+<meta name="robots" content="noindex,nofollow" />
+<style>
+:root{--bg:#0b0b0e;--card:#14141a;--muted:#a9adc1;--text:#eef0f6;--accent:#ff8fb1;--accent2:#ff5f87;--warn:#f59e0b;--ring:rgba(255,143,177,.35)}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;color:var(--text);background:
+radial-gradient(1200px 800px at -10% -10%,rgba(255,143,177,.18),transparent 60%),
+radial-gradient(900px 600px at 110% 110%,rgba(255,95,135,.12),transparent 60%),var(--bg);padding:24px}
+.wrap{max-width:1120px;margin:0 auto}
+.card{background:var(--card);border-radius:16px;padding:24px;border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.02)}
+h1{font-size:clamp(20px,3vw,26px);margin:0 0 10px}.muted{color:var(--muted)}
+.toolbar{display:flex;gap:10px;align-items:center;margin:14px 0 18px;flex-wrap:wrap}
+input[type=password]{flex:1 1 320px;max-width:520px;height:42px;background:#0f0f14;color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:0 12px;outline:none}
+input[type=password]:focus{box-shadow:0 0 0 3px var(--ring);border-color:transparent}
+.btn{height:42px;padding:0 14px;border-radius:10px;border:none;color:#0b0b0e;background:linear-gradient(180deg,var(--accent),var(--accent2));font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.secondary{background:#20202a;color:var(--text);border:1px solid rgba(255,255,255,.12)}
+.btn.warn{background:linear-gradient(180deg,#ffd29d,#f59e0b);color:#1a1206}
+.summary{margin:4px 0 14px;color:var(--muted)}
+table{width:100%;border-collapse:separate;border-spacing:0;border-radius:12px;border:1px solid rgba(255,255,255,.08);overflow:hidden}
+thead th{text-align:left;font-weight:700;font-size:13px;letter-spacing:.02em;color:#d6daec;background:rgba(255,255,255,.04);padding:10px 12px;position:sticky;top:0;z-index:1}
+tbody td{padding:10px 12px;border-top:1px solid rgba(255,255,255,.06)}
+tbody tr:nth-child(odd){background:rgba(255,255,255,.02)}
+.pill{display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:12px;font-weight:700}
+.pill.ok{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.35)}
+.pill.no{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.35)}
+.right{text-align:right}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Lista de Presença — Admin</h1>
+    <p class="muted">O token fica só no navegador e é usado como Authorization em cada requisição.</p>
+
+    <div class="toolbar">
+      <input id="token" type="password" placeholder="Cole aqui o ADMIN_TOKEN" autocomplete="off" />
+      <button id="load" class="btn">Carregar lista</button>
+      <button id="csv" class="btn secondary">Baixar CSV</button>
+      <button id="json" class="btn secondary">Baixar JSON</button>
+      <div style="flex:1"></div>
+      <button id="clear" class="btn warn">⚠️ Limpar tudo</button>
+    </div>
+
+    <div id="summary" class="summary">—</div>
+
+    <div style="overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th style="min-width:150px">Data/Hora</th>
+            <th style="min-width:220px">Nome</th>
+            <th>Presença</th>
+            <th class="right">Adultos</th>
+            <th class="right">Crianças</th>
+            <th style="min-width:160px">Telefone</th>
+            <th style="min-width:280px">Mensagem</th>
+            <th>IP</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const tIn = $('#token'), tbody = $('#tbody'), summary = $('#summary');
+const btnLoad = $('#load'), btnCSV = $('#csv'), btnJSON = $('#json'), btnClear = $('#clear');
+
+tIn.value = localStorage.getItem('rsvp_admin_token') || '';
+tIn.addEventListener('input', ()=>localStorage.setItem('rsvp_admin_token', tIn.value));
+
+function auth(){ const t=tIn.value.trim(); if(!t) throw new Error('Informe o ADMIN_TOKEN.'); return {'Authorization':'Bearer '+t}; }
+const esc = s => (s||'').replace(/[<>&]/g, m=>({ '<':'&lt;','>':'&gt;','&':'&amp;' }[m]));
+const fmtTs = iso => { try{ return new Date(iso).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'});}catch{ return iso; } };
+
+function render(list){
+  tbody.innerHTML=''; let pres=0, ad=0, ch=0;
+  list.forEach(r=>{
+    if(r.attending) pres++; ad+=+r.adults||0; ch+=+r.children||0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${fmtTs(r.ts)}</td>
+      <td>${esc(r.name)}</td>
+      <td>${r.attending?'<span class="pill ok">Sim</span>':'<span class="pill no">Não</span>'}</td>
+      <td class="right">${r.adults??0}</td>
+      <td class="right">${r.children??0}</td>
+      <td>${esc(r.phone)}</td>
+      <td>${esc(r.message)}</td>
+      <td>${r.ip??''}</td>`;
+    tbody.appendChild(tr);
+  });
+  summary.textContent = `Registros: ${list.length} • Presentes: ${pres} • Adultos: ${ad} • Crianças: ${ch}`;
+}
+
+async function list(){ const r=await fetch('/api/rsvp?list=1',{headers:auth()}); if(!r.ok) throw new Error('Falha ao carregar: '+r.status); return r.json(); }
+
+btnLoad.onclick = async()=>{ try{ render(await list()); }catch(e){ alert(e.message); } };
+btnCSV.onclick  = async()=>{ try{ const r=await fetch('/api/rsvp/export?format=csv',{headers:auth()}); if(!r.ok) throw 0;
+  const b=await r.blob(); const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:`rsvp-${new Date().toISOString().slice(0,10)}.csv`}); document.body.appendChild(a); a.click(); a.remove(); }catch{ alert('Falha ao exportar CSV'); } };
+btnJSON.onclick = async()=>{ try{ const r=await fetch('/api/rsvp/export?format=json',{headers:auth()}); if(!r.ok) throw 0;
+  const b=await r.blob(); const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:`rsvp-${new Date().toISOString().slice(0,10)}.json`}); document.body.appendChild(a); a.click(); a.remove(); }catch{ alert('Falha ao exportar JSON'); } };
+btnClear.onclick = async()=>{ if(!confirm('Tem certeza? Esta ação apaga todos os registros.')) return;
+  try{ const r=await fetch('/api/rsvp/clear?confirm=YES',{method:'POST',headers:auth()}); if(!r.ok) throw 0; alert('OK, registros removidos.'); render([]); }catch{ alert('Falha ao limpar.'); } };
+
+if (tIn.value) btnLoad.click();
+</script>
+</body>
+</html>
+  
