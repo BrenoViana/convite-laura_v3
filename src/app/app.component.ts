@@ -1,190 +1,147 @@
-﻿import { Component, OnInit, computed, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+﻿import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+import { RsvpService } from './services/rsvp.service';
 
-type ChildItem = { name: string; age: number | null };
+// Valor dos campos (não os controles)
+type KidValue = { name: string; age: number };
+
+// Controles do formulário da criança (tipagem correta p/ Angular Typed Forms)
+type KidControls = {
+  name: FormControl<string>;
+  age: FormControl<number>;
+};
+
+// FormGroup tipado da criança
+type KidFormGroup = FormGroup<KidControls>;
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit {
-  // === Dados do evento / links (ajuste se quiser) ===
-  env = {
-    eventDateISO: '2025-12-19T19:00:00-03:00', // usado pelo <countdown>
-    giftListUrl: '', // opcional
-  };
+export class AppComponent {
+  private fb = inject(FormBuilder);
+  private rsvp = inject(RsvpService);
 
-  // Endereço/agenda (ajuste conforme seu convite)
-  venue = 'Salão de Festas';
-  addressMain = 'Rua Exemplo, 123 - Bairro';
-  cep = '00000-000';
-  get mapsUrl(): string {
-    const q = encodeURIComponent(`${this.venue ? this.venue + ' - ' : ''}${this.addressMain} ${this.cep ?? ''}`);
-    return `https://www.google.com/maps/search/?api=1&query=${q}`;
-  }
-  icsUrl = '/assets/event.ics';
+  // Infos do evento (ajuste conforme seu convite)
+  eventDate = new Date('2025-12-20T16:00:00-03:00');
+  dateStr  = this.eventDate.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+  timeStr  = this.eventDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  mapsUrl  = 'https://maps.google.com/?q=Clube+Exemplo';
+  icsUrl   = '/assets/event.ics';
 
-  // Fotos no carrossel (se tiver); deixe vazio se não usar
-  photosSafe: string[] = [];
-
-  // Datas para chips
-  dateStr = '';
-  timeStr = '';
-
-  // === Modal / estado de envio ===
+  // Estado do modal/formulário
   rsvpOpen = false;
   isSubmitting = false;
   submitOk = false;
   submitError = false;
 
-  // === Formulário ===
-  form: FormGroup;
+  // Form principal tipado corretamente
+  form = this.fb.group({
+    name: this.fb.nonNullable.control<string>('', [Validators.required, Validators.minLength(2)]),
+    hasCompanion: this.fb.nonNullable.control<boolean>(false),
+    companionName: this.fb.nonNullable.control<string>(''),
+    hasChildren: this.fb.nonNullable.control<boolean>(false),
+    children: this.fb.array<KidFormGroup>([])
+  });
 
-  constructor(private fb: FormBuilder) {
-    // Cria o form no construtor (evita TS2729: uso do fb antes da init)
-    this.form = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      hasCompanion: [false],
-      companionName: [''],
-      hasChildren: [false],
-      children: this.fb.array<FormGroup<{
-        name: FormControl<string | null>;
-        age: FormControl<number | null>;
-      }>>([]),
-    });
+  get children(): FormArray<KidFormGroup> {
+    return this.form.controls.children;
+  }
 
-    // Regras dinâmicas
-    this.form.get('hasCompanion')!.valueChanges.subscribe((on: boolean) => {
-      const c = this.form.get('companionName')!;
-      if (on) {
+  constructor() {
+    // validação dinâmica do acompanhante
+    this.form.controls.hasCompanion.valueChanges.subscribe(v => {
+      const c = this.form.controls.companionName;
+      if (v) {
         c.addValidators([Validators.required, Validators.minLength(2)]);
       } else {
         c.clearValidators();
         c.setValue('');
       }
-      c.updateValueAndValidity({ emitEvent: false });
+      c.updateValueAndValidity();
     });
 
-    this.form.get('hasChildren')!.valueChanges.subscribe((on: boolean) => {
-      if (!on) {
-        // limpa lista ao desmarcar
-        while (this.children.length) this.children.removeAt(0);
-      } else if (on && this.children.length === 0) {
-        // sugere primeira linha
+    // liga/desliga a seção de crianças
+    this.form.controls.hasChildren.valueChanges.subscribe(v => {
+      if (!v) {
+        this.children.clear();
+      } else if (this.children.length === 0) {
         this.onAddChild();
       }
     });
   }
 
-  ngOnInit(): void {
-    // Monta strings de data/hora para chips
-    const d = new Date(this.env.eventDateISO);
-    const optsDate: Intl.DateTimeFormatOptions = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
-    const optsTime: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
-    this.dateStr = d.toLocaleDateString('pt-BR', optsDate);
-    this.timeStr = d.toLocaleTimeString('pt-BR', optsTime);
+  openRsvp() {
+    this.submitOk = false;
+    this.submitError = false;
+    this.rsvpOpen = true;
   }
 
-  // Acesso fácil ao FormArray de crianças
-  get children(): FormArray<FormGroup<{
-    name: FormControl<string | null>;
-    age: FormControl<number | null>;
-  }>> {
-    return this.form.get('children') as any;
+  closeRsvp(ev?: MouseEvent) {
+    if (ev?.target && (ev.target as HTMLElement).classList.contains('modal-backdrop')) {
+      this.rsvpOpen = false;
+      return;
+    }
+    if (!ev) this.rsvpOpen = false;
   }
 
-  // Helpers de criação/remoção de criança
-  newChild(name = '', age: number | null = null) {
-    return this.fb.group({
-      name: new FormControl<string | null>(name, [Validators.required, Validators.minLength(2)]),
-      age: new FormControl<number | null>(age, [Validators.required, Validators.min(0), Validators.max(15)]),
+  onAddChild() {
+    const fg: KidFormGroup = this.fb.group<KidControls>({
+      name: this.fb.nonNullable.control<string>('', [Validators.required, Validators.minLength(2)]),
+      age:  this.fb.nonNullable.control<number>(0,  [Validators.required, Validators.min(0), Validators.max(15)]),
     });
+    this.children.push(fg);
   }
-  onAddChild(): void {
-    this.children.push(this.newChild());
-  }
-  onDelChild(i: number): void {
+
+  onDelChild(i: number) {
     this.children.removeAt(i);
   }
 
-  // Abre/fecha modal
-  openRsvp(): void {
-    this.submitOk = false;
-    this.submitError = false;
-    this.isSubmitting = false;
-    this.rsvpOpen = true;
-    // foca no primeiro campo após abrir (pequeno delay para render)
-    setTimeout(() => {
-      const el = document.getElementById('name');
-      el?.focus();
-    }, 50);
-  }
-  closeRsvp(ev?: Event): void {
-    this.rsvpOpen = false;
-  }
-
-  // Monta texto detalhado para o "message" (administrativo)
-  private buildDetailsMessage(): string {
-    const v = this.form.value as any;
-    const parts: string[] = [];
-
-    if (v.hasCompanion && v.companionName) {
-      parts.push(`Acompanhante: ${v.companionName}`);
-    }
-    if (v.hasChildren && Array.isArray(v.children) && v.children.length) {
-      const kids = (v.children as ChildItem[])
-        .filter(k => (k?.name || '').trim().length > 0)
-        .map(k => `${k.name}${k.age != null ? `(${k.age})` : ''}`);
-      if (kids.length) parts.push(`Crianças: ${kids.join(', ')}`);
-    }
-
-    return parts.join(' | ');
-  }
-
-  // Submete para /api/rsvp
-  async submitRsvp(): Promise<void> {
-    this.submitOk = false;
-    this.submitError = false;
-
+  submitRsvp() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+    this.isSubmitting = true;
+    this.submitOk = false;
+    this.submitError = false;
 
-    const v = this.form.value as any;
+    const v = this.form.getRawValue();
+    const adults = 1 + (v.hasCompanion ? 1 : 0);
+    const kids: KidValue[] = v.hasChildren ? v.children.map(k => ({ name: k.name, age: k.age })) : [];
+    const childrenCount = kids.length;
 
-    const adults = 1 + (v.hasCompanion && v.companionName ? 1 : 0);
-    const childrenCount =
-      v.hasChildren && Array.isArray(v.children) ? (v.children as ChildItem[]).filter(k => !!(k?.name || '').trim()).length : 0;
-
-    const payload = {
-      name: (v.name as string).trim(),
+    this.rsvp.submit({
+      name: v.name,
       attending: true,
       adults,
       children: childrenCount,
-      phone: '',
-      message: this.buildDetailsMessage(),
-    };
-
-    this.isSubmitting = true;
-    try {
-      const res = await fetch('/api/rsvp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      this.submitOk = true;
-      // opcional: fechar após alguns segundos
-      // setTimeout(() => this.closeRsvp(), 2200);
-    } catch (e) {
-      console.error('RSVP submit error:', e);
-      this.submitError = true;
-    } finally {
-      this.isSubmitting = false;
-    }
+      extras: {
+        companionName: v.hasCompanion ? v.companionName : '',
+        kids
+      }
+    }).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.submitOk = true;
+        setTimeout(() => (this.rsvpOpen = false), 1500);
+      },
+      error: err => {
+        console.error(err);
+        this.isSubmitting = false;
+        this.submitError = true;
+      }
+    });
   }
 }
