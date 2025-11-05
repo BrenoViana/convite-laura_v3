@@ -17,7 +17,7 @@
 
     <div class="media">
       <div class="ratio">
-        <carousel-swiper [images]="photosSafe"></carousel-swiper>
+        <carousel-swiper [images]="photosSafe" [autoplayMs]="3500"></carousel-swiper>
       </div>
     </div>
 
@@ -50,8 +50,12 @@
     <section class="actions">
       <a class="btn" [href]="mapsUrl" target="_blank" rel="noopener">Abrir no mapa</a>
       <a class="btn" [href]="icsUrl" download="Laura-1Aninho-19-12-2025.ics">Salvar na agenda</a>
-      <a class="btn" [href]="env.giftListUrl || '#'" target="_blank" rel="noopener">Sugestão de presentes</a>
-      <a class="btn btn--primary" [href]="env.rsvpUrl || '#'" target="_blank" rel="noopener">Confirmar presença</a>
+
+      <!-- abre modal de presentes -->
+      <a class="btn" href="#" (click)="openGifts($event)">Sugestão de presentes</a>
+
+      <!-- abre modal de RSVP -->
+      <a class="btn btn--primary" href="#" (click)="openRsvp($event)">Confirmar presença</a>
     </section>
 
     <footer class="footnote">
@@ -59,3 +63,83 @@
     </footer>
   </article>
 </section>
+
+<!-- Modal: Sugestão de presentes -->
+<div class="modal-backdrop" *ngIf="giftsOpen" (click)="closeGifts()"></div>
+<div class="modal" *ngIf="giftsOpen" role="dialog" aria-modal="true" aria-labelledby="giftTitle">
+  <div class="modal__content" (click)="$event.stopPropagation()">
+    <h2 id="giftTitle">🍒 A cereja do bolo!</h2>
+    <p>A nossa cerejinha está crescendo rápido e deixando tudo mais doce! 🌸💕</p>
+    <p>
+      Como vamos comemorar a festa em Minas, se quiser mimá-la com um brinquedinho,
+      pode enviar pelo site direto para o nosso endereço:<br/>
+      <strong class="copyable" (click)="copyAddress()" title="Clique para copiar">
+        Rua Treze de Maio, nº 300 - Bairro São Luiz - Antônio Prado/RS - CEP: 95250-000 — será recebido com muito amor! ✈
+      </strong>
+    </p>
+    <p>Ela veste roupinhas 12-18m e calça 19-22.<br/>Brinquedos serão todos <strong>Bem-vindos!!! ❤</strong></p>
+    <div class="modal__actions">
+      <button type="button" class="btn btn--primary" (click)="closeGifts()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: RSVP (form completo) -->
+<div class="modal-backdrop" *ngIf="rsvpOpen" (click)="closeRsvp()"></div>
+<div class="modal" *ngIf="rsvpOpen" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
+  <div class="modal__content" (click)="$event.stopPropagation()">
+    <h2 id="rsvpTitle">Confirmar Presença</h2>
+
+    <form class="modal__body" [formGroup]="form" (ngSubmit)="submitRsvp()">
+      <!-- Nome -->
+      <label class="form-row">
+        <span>Nome completo*</span>
+        <input type="text" formControlName="name" placeholder="Seu nome" autocomplete="name" />
+        <small class="err" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">
+          Informe seu nome.
+        </small>
+      </label>
+
+      <!-- Acompanhante -->
+      <label class="form-row switch">
+        <input type="checkbox" formControlName="hasCompanion" />
+        <span>Levará acompanhante?</span>
+      </label>
+
+      <label class="form-row" *ngIf="form.get('hasCompanion')?.value">
+        <span>Nome do acompanhante*</span>
+        <input type="text" formControlName="companionName" placeholder="Nome do acompanhante" />
+        <small class="err" *ngIf="form.get('companionName')?.touched && form.get('companionName')?.invalid">
+          Informe o nome do acompanhante.
+        </small>
+      </label>
+
+      <!-- Crianças -->
+      <label class="form-row switch">
+        <input type="checkbox" formControlName="hasChildren" />
+        <span>Levará crianças?</span>
+      </label>
+
+      <div class="kids" *ngIf="form.get('hasChildren')?.value">
+        <div class="kid-row" *ngFor="let kid of children.controls; let i = index" [formGroup]="kid">
+          <div class="kid-fields">
+            <input type="text" formControlName="name" placeholder="Nome da criança" />
+            <input type="number" min="0" max="18" step="1" formControlName="age" placeholder="Idade" />
+          </div>
+          <button type="button" class="btn small" (click)="removeChild(i)" aria-label="Remover criança">Remover</button>
+        </div>
+        <button type="button" class="btn" (click)="addChild()">+ Adicionar criança</button>
+      </div>
+
+      <!-- status -->
+      <div class="status" *ngIf="isSubmitting">Enviando…</div>
+      <div class="status ok" *ngIf="submitOk">Presença registrada. Obrigado! 🎉</div>
+      <div class="status err" *ngIf="submitError">Falha ao enviar. Tente novamente.</div>
+
+      <div class="modal__actions">
+        <button type="button" class="btn" (click)="closeRsvp()" [disabled]="isSubmitting">Cancelar</button>
+        <button type="submit" class="btn btn--primary" [disabled]="form.invalid || isSubmitting">Confirmar</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,44 +1,67 @@
-﻿import { Component, Input, signal } from '@angular/core';
+﻿import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'carousel-swiper',
   standalone: true,
   imports: [CommonModule],
-  styles: [`
-    .wrap{position:relative; width:100%; height:100%;}
-    .slide{position:absolute; inset:0; opacity:0; transition:opacity .35s ease; display:grid; place-items:center;}
-    .slide.active{opacity:1;}
-    img{width:100%; height:100%; object-fit:cover; display:block;}
-    .dots{position:absolute; left:0; right:0; bottom:8px; display:flex; gap:6px; justify-content:center;}
-    .dot{width:8px; height:8px; border-radius:999px; background:rgba(0,0,0,.15); border:1px solid rgba(255,255,255,.7)}
-    .dot.active{background:rgba(255,255,255,.9);}
-    .nav{position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.8); border:1px solid #ffd3df; border-radius:8px; padding:4px 8px; cursor:pointer; user-select:none;}
-    .prev{left:8px;} .next{right:8px;}
-  `],
   template: `
-  <div class="wrap sakura-swiper" *ngIf="imgs.length">
-    <div class="slide" *ngFor="let src of imgs; let i = index" [class.active]="i===idx()">
-      <img [src]="src" alt="foto {{i+1}}">
+    <div class="sakura-swiper" #root>
+      <div class="slides">
+        <img *ngFor="let img of images" [src]="img" alt="" />
+      </div>
+      <button class="nav prev" type="button" (click)="prev()" aria-label="Anterior">‹</button>
+      <button class="nav next" type="button" (click)="next()" aria-label="Próximo">›</button>
     </div>
-    <button class="nav prev" type="button" (click)="prev()" aria-label="Anterior">‹</button>
-    <button class="nav next" type="button" (click)="next()" aria-label="Próximo">›</button>
-    <div class="dots">
-      <span class="dot" *ngFor="let _ of imgs; let i=index" [class.active]="i===idx()" (click)="go(i)"></span>
-    </div>
-  </div>
-  `
+  `,
+  styles: [`
+    .sakura-swiper{position:relative; width:100%; height:100%; overflow:hidden}
+    .slides{display:flex; width:100%; height:100%; transition:transform .5s ease}
+    .slides img{flex:0 0 100%; width:100%; height:100%; object-fit:cover; display:block}
+    .nav{position:absolute; top:50%; transform:translateY(-50%); background:#ffffffcc; border:1px solid #ffd3df; border-radius:999px; width:32px;height:32px; display:grid;place-items:center; font-size:18px; cursor:pointer}
+    .nav.prev{left:8px}
+    .nav.next{right:8px}
+  `]
 })
-export class CarouselSwiperComponent {
+export class CarouselSwiperComponent implements OnInit, OnDestroy {
   @Input() images: string[] = [];
-  imgs: string[] = [];
-  idx = signal(0);
+  @Input() autoplayMs = 3500;
 
-  ngOnChanges() {
-    this.imgs = Array.isArray(this.images) ? this.images : [];
-    if (this.imgs.length && this.idx() >= this.imgs.length) this.idx.set(0);
+  @ViewChild('root', { static: true }) root!: ElementRef<HTMLDivElement>;
+
+  private idx = 0;
+  private timer?: any;
+
+  ngOnInit(): void {
+    this.resetAutoplay();
   }
-  prev(){ this.idx.set((this.idx() - 1 + this.imgs.length) % this.imgs.length); }
-  next(){ this.idx.set((this.idx() + 1) % this.imgs.length); }
-  go(i:number){ if(i>=0 && i<this.imgs.length) this.idx.set(i); }
+
+  ngOnDestroy(): void {
+    clearInterval(this.timer);
+  }
+
+  private applyTransform() {
+    const slides = this.root.nativeElement.querySelector('.slides') as HTMLDivElement;
+    slides.style.transform = `translateX(-${this.idx * 100}%)`;
+  }
+
+  next() {
+    if (!this.images?.length) return;
+    this.idx = (this.idx + 1) % this.images.length;
+    this.applyTransform();
+    this.resetAutoplay();
+  }
+  prev() {
+    if (!this.images?.length) return;
+    this.idx = (this.idx - 1 + this.images.length) % this.images.length;
+    this.applyTransform();
+    this.resetAutoplay();
+  }
+
+  private resetAutoplay() {
+    clearInterval(this.timer);
+    if (this.autoplayMs && this.autoplayMs > 0 && this.images?.length > 1) {
+      this.timer = setInterval(() => this.next(), this.autoplayMs);
+    }
+  }
 }
