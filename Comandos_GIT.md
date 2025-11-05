@@ -36,5 +36,5 @@ git push origin main
 
 # Tag #
 
-git tag -a v3.1.1 -m "(Popup "Sugestão"): Alteração no texto"
-git push origin v3.1.1
+git tag -a v3.1.2 -m "(Popup "Sugestão"): Alteração no texto"
+git push origin v3.1.2
