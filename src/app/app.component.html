@@ -69,15 +69,21 @@
 <div class="modal" *ngIf="giftsOpen" role="dialog" aria-modal="true" aria-labelledby="giftTitle">
   <div class="modal__content" (click)="$event.stopPropagation()">
     <h2 id="giftTitle">🍒 A cereja do bolo!</h2>
-    <p>A nossa cerejinha está crescendo rápido e deixando tudo mais doce! 🌸💕</p>
+    <p>Nossa cerejinha está crescendo rápido e deixando tudo mais doce! 🌸💕</p>
     <p>
-      Como vamos comemorar a festa em Minas, se quiser mimá-la com um brinquedinho,
-      pode enviar pelo site direto para o nosso endereço:<br/>
+      Se quiser presentear, sugerimos comprar online e enviar direto para o nosso endereço — será recebido com muito
+      amor! ✈<br />
+      <br />
       <strong class="copyable" (click)="copyAddress()" title="Clique para copiar">
-        Rua Treze de Maio, nº 300 - Bairro São Luiz - Antônio Prado/RS - CEP: 95250-000 — será recebido com muito amor! ✈
+        Rua Treze de Maio, 300 – São Luiz, Antônio Prado/RS | 95250-000
       </strong>
     </p>
-    <p>Ela veste roupinhas 12-18m e calça 19-22.<br/>Brinquedos serão todos <strong>Bem-vindos!!! ❤</strong></p>
+    <p><strong>Sugestões:</strong></p>
+    <ul class="sugestoes">
+      <li>🍒 <strong>Roupinhas:</strong> 12–18 meses</li>
+      <li>🍒 <strong>Calçados:</strong> 19–22</li>
+    </ul>
+    <p>Brinquedos são todos <strong>Bem-vindos!</strong> ❤️</p>
     <div class="modal__actions">
       <button type="button" class="btn btn--primary" (click)="closeGifts()">OK</button>
     </div>
