@@ -1,15 +1,15 @@
 ﻿BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//convite-laura_v3//BR
+PRODID:-//Convite Laura//PT-BR//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
-UID:laura-1aninho-20251219@example
-DTSTAMP:20250101T000000Z
-DTSTART:20251219T230000Z
-DTEND:20251220T020000Z
+UID:laura-1aninho-20251219@alves.tec.br
+DTSTAMP:20251103T150000Z
+DTSTART:20251219T190000Z
+DTEND:20251219T220000Z
 SUMMARY:Aniversário da Laura - 1 aninho
-LOCATION:Rua Alfredina Amaral, 75 - Milionários, Belo Horizonte/MG, 30620-220 - Casa da Alegria
-DESCRIPTION:Vamos celebrar! Sua presença vai deixar tudo ainda mais especial.
+DESCRIPTION:Venha celebrar com a gente!
+LOCATION:Rua Alfredina Amaral\, 75 - Milionários\, Belo Horizonte - MG\, 30620-220
 END:VEVENT
 END:VCALENDAR

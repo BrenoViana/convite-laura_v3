@@ -1,7 +1,14 @@
 {
   "/api": {
-    "target": "https://convite-laura-v3.pages.dev/",
+    "target": "https://laura.alves.tec.br",
     "secure": true,
-    "changeOrigin": true
+    "changeOrigin": true,
+    "logLevel": "info"
+  },
+  "/tools": {
+    "target": "https://laura.alves.tec.br",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "info"
   }
 }

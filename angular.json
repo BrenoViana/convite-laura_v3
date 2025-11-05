@@ -1,95 +1,69 @@
 ﻿{
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
-  "cli": {
-    "packageManager": "npm",
-    "analytics": "a6deb1e4-20a2-4fd9-b48a-9e20406c1934"
-  },
-  "newProjectRoot": "projects",
   "projects": {
     "convite-laura_v3": {
       "projectType": "application",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss"
-        }
-      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular/build:application",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
+            "outputPath": "dist/convite-laura_v3",
+            "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
             "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              },
               "src/favicon.ico",
-              "src/assets"
+              "src/favicon.svg",
+              "src/assets",
+              {
+                "input": "src",
+                "glob": "assets/manifest.webmanifest",
+                "output": "/"
+              },
+              { "input": "src", "glob": "_headers",   "output": "/" },
+              { "input": "src", "glob": "_redirects", "output": "/" }
             ],
-            "styles": ["src/styles.scss", "node_modules/swiper/swiper-bundle.min.css"]
+            "styles": ["src/styles.css"],
+            "scripts": []
           },
           "configurations": {
-            "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
-                }
-              ],
-              "outputHashing": "all"
-            },
             "development": {
               "optimization": false,
-              "extractLicenses": false,
               "sourceMap": true
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "serve": {
-          "builder": "@angular/build:dev-server",
-          "configurations": {
-            "production": {
-              "buildTarget": "convite-laura_v3:build:production"
             },
-            "development": {
-              "buildTarget": "convite-laura_v3:build:development"
+            "production": {
+              "outputHashing": "all",
+              "optimization": true,
+              "sourceMap": false
             }
           },
           "defaultConfiguration": "development"
         },
-        "extract-i18n": {
-          "builder": "@angular/build:extract-i18n"
-        },
-        "test": {
-          "builder": "@angular/build:karma",
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "polyfills": ["zone.js", "zone.js/testing"],
-            "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
-            ],
-            "styles": ["src/styles.scss"]
-          }
+            "buildTarget": "convite-laura_v3:build"
+          },
+          "configurations": {
+            "development": {
+              "buildTarget": "convite-laura_v3:build:development"
+            },
+            "production": {
+              "buildTarget": "convite-laura_v3:build:production"
+            }
+          },
+          "defaultConfiguration": "development"
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "369b63a7-ffe3-4dc8-98f0-b296cea80694"
   }
 }
+

@@ -1,28 +1,43 @@
-﻿import { Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { CommonModule } from "@angular/common";
+﻿import { Component, Input, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: "countdown",
+  selector: 'countdown',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: "./countdown.component.html",
-  styleUrls: ["./countdown.component.scss"]
+  template: `
+  <div class="countdown" role="timer" aria-live="polite" *ngIf="ready">
+    <div class="box"><span>{{d}}</span><small>dias</small></div>
+    <div class="box"><span>{{h}}</span><small>horas</small></div>
+    <div class="box"><span>{{m}}</span><small>min</small></div>
+    <div class="box"><span>{{s}}</span><small>seg</small></div>
+  </div>
+  `
 })
-export class CountdownComponent implements OnInit, OnDestroy {
-  @Input() targetISO!: string;
-  days = 0; hours = 0; minutes = 0; seconds = 0;
+export class CountdownComponent implements OnDestroy {
+  @Input({ required: true }) targetISO!: string;
+
+  d = 0; h = 0; m = 0; s = 0; ready = false;
   private t?: any;
 
-  ngOnInit(){ this.tick(); this.t = setInterval(() => this.tick(), 1000); }
-  ngOnDestroy(){ if(this.t) clearInterval(this.t); }
+  ngOnInit() {
+    this.tick();
+    this.t = setInterval(() => this.tick(), 1000);
+  }
+  ngOnDestroy() {
+    if (this.t) clearInterval(this.t);
+  }
 
-  private tick(){
+  private tick() {
+    if (!this.targetISO) return;
     const target = new Date(this.targetISO).getTime();
     const now = Date.now();
-    let diff = Math.max(0, Math.floor((target - now)/1000));
-    this.days = Math.floor(diff / 86400); diff -= this.days*86400;
-    this.hours = Math.floor(diff / 3600); diff -= this.hours*3600;
-    this.minutes = Math.floor(diff / 60); diff -= this.minutes*60;
-    this.seconds = diff;
+    const diff = Math.max(0, target - now);
+    const sec = Math.floor(diff / 1000);
+    this.d = Math.floor(sec / 86400);
+    this.h = Math.floor((sec % 86400) / 3600);
+    this.m = Math.floor((sec % 3600) / 60);
+    this.s = Math.floor(sec % 60);
+    this.ready = true;
   }
 }

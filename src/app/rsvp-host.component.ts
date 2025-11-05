@@ -6,7 +6,7 @@ import { RsvpBlockComponent } from "./components/rsvp-block/rsvp-block.component
 @Component({
   selector: "rsvp-host",
   standalone: true,
-  imports: [CommonModule, HttpClientModule, RsvpBlockComponent],
+  imports: [CommonModule, HttpClientModule, /*RsvpBlockComponent*/],
   template: `
     <button class="rsvp-fab" type="button" (click)="open()">Lista de presença</button>
 

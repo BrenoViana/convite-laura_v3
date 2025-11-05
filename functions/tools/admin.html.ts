@@ -1,34 +1,44 @@
-// functions/tools/admin.html.ts
-interface Bindings {
-  ADMIN_PASSWORD: string;
-  ADMIN_USER?: string;
-  ASSETS: Fetcher;
+/// <reference types="@cloudflare/workers-types" />
+
+interface Env {
+  ASSETS: Fetcher;           // Pages asset binding
+  ADMIN_USER?: string;       // usuário do Basic Auth (ex.: "admin")
+  ADMIN_PASSWORD?: string;   // senha do Basic Auth
 }
 
-export const onRequest: PagesFunction<Bindings> = async ({ request, env }) => {
-  const user = (env.ADMIN_USER || 'admin').trim();
-  const pass = (env.ADMIN_PASSWORD || '').trim();
+function basicAuthHeader(user: string, pass: string) {
+  const token = btoa(`${user}:${pass}`);
+  return `Basic ${token}`;
+}
 
-  const hdr = request.headers.get('Authorization') || '';
-  const expected = 'Basic ' + btoa(`${user}:${pass}`);
+function parseBasic(h: string | null): { user: string; pass: string } | null {
+  if (!h) return null;
+  const m = /^Basic\s+(.+)$/i.exec(h);
+  if (!m) return null;
+  try {
+    const [user, pass] = atob(m[1]).split(':', 2);
+    return { user, pass };
+  } catch {
+    return null;
+  }
+}
 
-  if (!pass || hdr !== expected) {
+export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
+  const wantUser = env.ADMIN_USER || 'admin';
+  const wantPass = env.ADMIN_PASSWORD || 'changeme';
+
+  const creds = parseBasic(request.headers.get('authorization'));
+  const ok = creds && creds.user === wantUser && creds.pass === wantPass;
+
+  if (!ok) {
     return new Response('Unauthorized', {
       status: 401,
-      headers: { 'WWW-Authenticate': 'Basic realm="RSVP Admin"' },
+      headers: { 'WWW-Authenticate': 'Basic realm="RSVP Admin"' }
     });
   }
 
-  const url = new URL(request.url);
-  url.pathname = '/assets/tools/admin.html';
-
-  const upstream = await env.ASSETS.fetch(new Request(url.toString(), request));
-  const h = new Headers(upstream.headers);
-  h.set('Cache-Control', 'no-store');
-  h.set('X-Robots-Tag', 'noindex,nofollow');
-
-  return new Response(await upstream.arrayBuffer(), {
-    status: upstream.status,
-    headers: h,
-  });
+  // Serve o HTML estático do admin (em src/assets/tools/admin.html -> publicado como /assets/tools/admin.html)
+  // Como a função está em /functions/tools/admin.html.ts, a URL pública é /tools/admin.html
+  // O Pages primeiro passa pela Function; aqui podemos delegar para os assets:
+  return env.ASSETS.fetch(request);
 };

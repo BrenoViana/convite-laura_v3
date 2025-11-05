@@ -1,27 +1,29 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
 
-interface RsvpPayload {
+export type Kid = { name: string; age: number };
+export type RsvpPayload = {
   name: string;
   attending: boolean;
   adults: number;
-  children: number;
+  hasCompanion?: boolean;
+  companionName?: string;
+  hasChildren?: boolean;
+  children?: Kid[] | number;
   phone?: string;
   message?: string;
-  extras?: {
-    companionName?: string;
-    kids?: Array<{ name: string; age: number }>;
-  };
-}
+};
 
 @Injectable({ providedIn: 'root' })
 export class RsvpService {
-  private http = inject(HttpClient);
   private base = '/api/rsvp';
 
-  // Retorna Observable para funcionar com .subscribe() nos componentes existentes
-  submit(payload: RsvpPayload): Observable<{ ok: boolean; id: string }> {
-    return this.http.post<{ ok: boolean; id: string }>(this.base, payload);
+  async submit(data: RsvpPayload): Promise<{ ok: boolean; id: string } | undefined> {
+    const r = await fetch(this.base, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
   }
 }

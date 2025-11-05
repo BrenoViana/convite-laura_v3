@@ -1,46 +1,32 @@
-import { Component, EventEmitter, Output } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from "@angular/forms";
-import { HttpClientModule } from "@angular/common/http";
-import { RsvpService } from "../../services/rsvp.service";
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { RsvpService } from '../../services/rsvp.service';
 
 @Component({
-  selector: "app-rsvp-block",
+  selector: 'rsvp-block',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
-  templateUrl: "./rsvp-block.component.html",
-  styleUrls: ["./rsvp-block.component.scss"],
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
+  <form [formGroup]="form" (ngSubmit)="send()">
+    <input formControlName="name" placeholder="Seu nome" />
+    <button type="submit">Confirmar</button>
+  </form>
+  `
 })
 export class RsvpBlockComponent {
-  @Output() close = new EventEmitter<void>();
+  private fb = inject(FormBuilder);
+  private api = inject(RsvpService);
 
-  sending = false;
-  ok = false;
-  err = "";
+  form = this.fb.group({
+    name: ['', Validators.required],
+    attending: [true],
+    adults: [2]
+  });
 
-  // Importante: declarar e só inicializar depois da injeção
-  form!: FormGroup;
-
-  constructor(private fb: FormBuilder, private rsvp: RsvpService) {
-    this.form = this.fb.group({
-      name: ["", [Validators.required, Validators.minLength(2)]],
-      attending: [true, Validators.required],
-      adults: [1],
-      children: [0],
-      phone: [""],
-      message: [""],
-    });
-  }
-
-  send() {
-    this.ok = false; this.err = "";
+  async send(){
     if (this.form.invalid) return;
-    this.sending = true;
-    this.rsvp.submit(this.form.value as any).subscribe({
-      next: () => { this.sending = false; this.ok = true; },
-      error: () => { this.sending = false; this.err = "Falha ao enviar. Tente novamente."; },
-    });
+    await this.api.submit(this.form.value as any);
+    this.form.reset({ attending: true, adults: 2 });
   }
-
-  closeModal(){ this.close.emit(); }
 }

@@ -1,155 +1,235 @@
-﻿// functions/api/rsvp.ts
-// Endpoints:
-//  POST /api/rsvp                       -> grava confirmação
-//  GET  /api/rsvp?list=1               -> lista (admin)
-//  GET  /api/rsvp/export?format=csv|json (admin)
-//  POST /api/rsvp/clear?confirm=YES    -> limpa tudo (admin)
-// Suporta Authorization: Bearer <ADMIN_TOKEN> ou ?key=<ADMIN_TOKEN>
+﻿/// <reference types="@cloudflare/workers-types" />
 
-interface Bindings {
-  RSVP: KVNamespace;
-  ADMIN_TOKEN: string;
+// Tipos do ambiente (bindings configurados no Cloudflare Pages)
+interface Env {
+  RSVP: KVNamespace;          // KV mapeado para "convite-rsvp"
+  ADMIN_TOKEN: string;        // Variável de texto com o token de admin
 }
 
-type Kid = { name?: string; age?: number };
-type Details = { companion?: { name?: string } | null; kids?: Kid[] };
-
-type Item = {
+// Modelo salvo no KV
+interface StoredRsvp {
   id: string;
   ts: string;
   name: string;
   attending: boolean;
   adults: number;
-  children: number;
+  hasCompanion?: boolean;
+  companionName?: string;
+  hasChildren?: boolean;
+  children?: { name: string; age: number }[] | number;
   phone?: string;
   message?: string;
   ip?: string;
   ua?: string;
-  details?: Details;
-};
+}
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-};
+// Utilitários
+const json = (data: unknown, init?: ResponseInit) =>
+  new Response(JSON.stringify(data), {
+    headers: { 'content-type': 'application/json; charset=utf-8' },
+    ...init,
+  });
 
-export const onRequest: PagesFunction<Bindings> = async (ctx) => {
-  const { request, env } = ctx;
-  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+function notAuthorized() {
+  return new Response('Unauthorized', {
+    status: 401,
+    headers: { 'WWW-Authenticate': 'Bearer realm="RSVP Admin"' },
+  });
+}
 
-  const url = new URL(request.url);
-  const path = url.pathname.replace(/\/+$/, '');
+function badRequest(msg = 'Bad Request') {
+  return json({ error: msg }, { status: 400 });
+}
 
-  const isAdmin = (req: Request) => {
-    const h = req.headers.get('Authorization') || '';
-    const bearer = h.startsWith('Bearer ') ? h.slice(7) : '';
-    const key = url.searchParams.get('key') || '';
-    return !!env.ADMIN_TOKEN && (bearer === env.ADMIN_TOKEN || key === env.ADMIN_TOKEN);
+async function readBody<T = unknown>(req: Request): Promise<T | null> {
+  try {
+    const ct = req.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) return null;
+    return (await req.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+function getBearer(req: Request): string | null {
+  const h = req.headers.get('authorization');
+  if (!h) return null;
+  const m = /^Bearer\s+(.+)$/i.exec(h);
+  return m ? m[1].trim() : null;
+}
+
+async function listAll(env: Env): Promise<StoredRsvp[]> {
+  const out: StoredRsvp[] = [];
+  let cursor: string | undefined = undefined;
+
+  do {
+    const page = await env.RSVP.list({ prefix: 'rsvp:', cursor });
+    for (const k of page.keys) {
+      const raw = await env.RSVP.get(k.name);
+      if (raw) {
+        try {
+          out.push(JSON.parse(raw) as StoredRsvp);
+        } catch {
+          // ignora corrompidos
+        }
+      }
+    }
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+
+  // Mais recentes primeiro
+  out.sort((a, b) => (a.ts < b.ts ? 1 : -1));
+  return out;
+}
+
+function toCSV(rows: StoredRsvp[]) {
+  const escape = (s: unknown) => {
+    const v = s == null ? '' : String(s);
+    return /[",\n;]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
   };
 
-  // ---------- EXPORT ----------
-  if (path.endsWith('/export')) {
-    if (!isAdmin(request)) return new Response('Unauthorized', { status: 401, headers: CORS });
-    const format = (url.searchParams.get('format') || 'csv').toLowerCase();
-    const list = await loadAll(env);
-    if (format === 'json') {
-      return json(list);
-    }
-    // CSV
-    const rows = [
-      [
-        'id','ts','name','attending','adults','children',
-        'companion','companion_name','kids_count','kids_details','phone','message','ip','ua'
-      ].join(';')
-    ];
-    for (const r of list) {
-      const companion = !!(r.details?.companion?.name);
-      const compName = r.details?.companion?.name || '';
-      const kids = r.details?.kids || [];
-      const kidsStr = kids.map(k => `${(k.name||'').replace(/;/g,',')} (${Number(k.age)||0})`).join(' | ');
-      rows.push([
-        r.id, r.ts, safe(r.name), String(!!r.attending), r.adults, r.children,
-        companion ? 'yes' : 'no', safe(compName), kids.length, safe(kidsStr),
-        safe(r.phone||''), safe(r.message||''), r.ip||'', (r.ua||'').replace(/;/g,',')
-      ].join(';'));
-    }
-    return new Response(rows.join('\n'), {
-      headers: { ...CORS, 'Content-Type': 'text/csv; charset=utf-8' },
+  const headers = [
+    'id',
+    'data_hora',
+    'nome',
+    'presenca',
+    'adultos',
+    'acompanha',
+    'nome_acompanhante',
+    'leva_criancas',
+    'criancas',
+    'telefone',
+    'mensagem',
+    'ip',
+    'ua'
+  ];
+
+  const lines = rows.map(r => {
+    const kids = Array.isArray(r.children)
+      ? r.children.map(k => `${k.name} (${k.age})`).join('; ')
+      : (typeof r.children === 'number' ? r.children : '');
+
+    return [
+      r.id,
+      r.ts,
+      r.name,
+      r.attending ? 'Sim' : 'Não',
+      r.adults ?? 0,
+      r.hasCompanion ? 'Sim' : 'Não',
+      r.companionName ?? '',
+      r.hasChildren ? 'Sim' : 'Não',
+      kids,
+      r.phone ?? '',
+      r.message ?? '',
+      r.ip ?? '',
+      r.ua ?? ''
+    ].map(escape).join(',');
+  });
+
+  return [headers.join(','), ...lines].join('\n');
+}
+
+export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
+  const url = new URL(request.url);
+  const method = request.method.toUpperCase();
+  const pathname = url.pathname; // /api/rsvp, /api/rsvp/export, /api/rsvp/clear
+
+  // Pré-flight CORS
+  if (method === 'OPTIONS') {
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
+      }
     });
   }
 
-  // ---------- CLEAR ----------
-  if (path.endsWith('/clear')) {
-    if (!isAdmin(request)) return new Response('Unauthorized', { status: 401, headers: CORS });
-    const ok = (url.searchParams.get('confirm') || '') === 'YES';
-    if (!ok) return new Response('Missing confirm=YES', { status: 400, headers: CORS });
-    const keys = await env.RSVP.list({ prefix: 'rsvp:' });
-    await Promise.all(keys.keys.map(k => env.RSVP.delete(k.name)));
-    return json({ ok: true, cleared: keys.keys.length });
+  // --------- EXPORTAÇÃO (GET /api/rsvp/export?format=json|csv) ---------
+  if (method === 'GET' && pathname.endsWith('/export')) {
+    const key = getBearer(request) || url.searchParams.get('key');
+    if (!key || key !== env.ADMIN_TOKEN) return notAuthorized();
+
+    const rows = await listAll(env);
+    const format = (url.searchParams.get('format') || 'json').toLowerCase();
+    if (format === 'csv') {
+      return new Response(toCSV(rows), {
+        headers: {
+          'content-type': 'text/csv; charset=utf-8',
+          'content-disposition': `attachment; filename="rsvp-${new Date().toISOString().slice(0,10)}.csv"`
+        }
+      });
+    }
+    return json(rows);
   }
 
-  // ---------- LIST ----------
-  if (request.method === 'GET' && url.searchParams.get('list') === '1') {
-    if (!isAdmin(request)) return new Response('Unauthorized', { status: 401, headers: CORS });
-    const list = await loadAll(env);
-    return json(list);
+  // --------- LIMPAR (POST /api/rsvp/clear?confirm=YES) -----------------
+  if (method === 'POST' && pathname.endsWith('/clear')) {
+    const key = getBearer(request) || url.searchParams.get('key');
+    if (!key || key !== env.ADMIN_TOKEN) return notAuthorized();
+    if (url.searchParams.get('confirm') !== 'YES') return badRequest('confirmação ausente');
+
+    // apaga todos os rsvp:*
+    let cursor: string | undefined = undefined;
+    do {
+      const page = await env.RSVP.list({ prefix: 'rsvp:', cursor });
+      await Promise.all(page.keys.map(k => env.RSVP.delete(k.name)));
+      cursor = page.list_complete ? undefined : page.cursor;
+    } while (cursor);
+
+    return json({ ok: true, cleared: true });
   }
 
-  // ---------- CREATE ----------
-  if (request.method === 'POST') {
-    let data: any;
-    try { data = await request.json(); } catch { return bad('invalid json'); }
+  // --------- LISTAGEM ADMIN (GET /api/rsvp?list=1) ---------------------
+  if (method === 'GET' && url.searchParams.get('list') === '1') {
+    const key = getBearer(request) || url.searchParams.get('key');
+    if (!key || key !== env.ADMIN_TOKEN) return notAuthorized();
+    const rows = await listAll(env);
+    return json(rows);
+  }
 
-    const name = str(data.name);
-    if (!name || name.length < 2) return bad('nome inválido');
-
-    // normaliza detalhes:
-    const withComp = !!data.withCompanion || !!(data.details?.companion);
-    const companionName = str(data.companionName || data.details?.companion?.name);
-    const kids: Kid[] = Array.isArray(data.kids || data.details?.kids) ? (data.kids || data.details?.kids) : [];
-    const cleanKids = kids
-      .map((k: any) => ({ name: str(k.name), age: num(k.age) }))
-      .filter(k => !!k.name);
-
-    const adults = Math.max(1, Number(data.adults ?? (1 + (withComp ? 1 : 0))) | 0);
-    const children = Number.isFinite(data.children) ? Number(data.children) | 0 : cleanKids.length;
-
-    const item: Item = {
-      id: crypto.randomUUID(),
-      ts: new Date().toISOString(),
-      name,
-      attending: !!data.attending,
-      adults,
-      children,
-      phone: str(data.phone),
-      message: str(data.message),
-      ip: ctx.request.headers.get('cf-connecting-ip') || undefined,
-      ua: ctx.request.headers.get('user-agent') || undefined,
-      details: {
-        companion: withComp ? { name: companionName } : null,
-        kids: cleanKids
-      }
+  // --------- CRIAÇÃO (POST /api/rsvp) ----------------------------------
+  if (method === 'POST') {
+    type ClientPayload = {
+      name?: string;
+      attending?: boolean;
+      adults?: number;
+      hasCompanion?: boolean;
+      companionName?: string;
+      hasChildren?: boolean;
+      children?: { name: string; age: number }[] | number;
+      phone?: string;
+      message?: string;
     };
 
-    await env.RSVP.put(`rsvp:${item.id}`, JSON.stringify(item), { metadata: { ts: item.ts, name: item.name } });
-    return json({ ok: true, id: item.id });
+    const body = await readBody<ClientPayload>(request);
+    if (!body) return badRequest('JSON inválido');
+
+    const name = (body.name || '').trim();
+    if (!name) return badRequest('Nome é obrigatório');
+
+    const id = crypto.randomUUID();
+    const item: StoredRsvp = {
+      id,
+      ts: new Date().toISOString(),
+      name,
+      attending: !!body.attending,
+      adults: Number(body.adults ?? 0),
+      hasCompanion: !!body.hasCompanion,
+      companionName: body.companionName?.trim() || undefined,
+      hasChildren: !!body.hasChildren,
+      children: Array.isArray(body.children) || typeof body.children === 'number' ? body.children : undefined,
+      phone: body.phone?.trim() || undefined,
+      message: body.message?.trim() || undefined,
+      ip: request.headers.get('cf-connecting-ip') || undefined,
+      ua: request.headers.get('user-agent') || undefined
+    };
+
+    await env.RSVP.put(`rsvp:${id}`, JSON.stringify(item), { expirationTtl: 60 * 60 * 24 * 365 }); // 1 ano
+
+    return json({ ok: true, id }, { status: 200 });
   }
 
-  return new Response('Not found', { status: 404, headers: CORS });
+  // Qualquer outro método/rota
+  return new Response('Not found', { status: 404 });
 };
-
-// ---------- helpers ----------
-const json = (o: any) => new Response(JSON.stringify(o), { headers: { ...CORS, 'Content-Type': 'application/json; charset=utf-8' } });
-const bad  = (m: string) => new Response(JSON.stringify({ ok: false, error: m }), { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } });
-const str = (v: any) => (typeof v === 'string' ? v.trim() : '');
-const num = (v: any) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
-const safe = (s: string) => (s||'').replace(/\r?\n/g,' ').replace(/;/g,',');
-
-async function loadAll(env: Bindings) {
-  const page = await env.RSVP.list({ prefix: 'rsvp:' });
-  const values = await Promise.all(page.keys.map(async k => {
-    try { return JSON.parse((await env.RSVP.get(k.name)) || '{}'); } catch { return null; }
-  }));
-  return values.filter(Boolean) as Item[];
-}

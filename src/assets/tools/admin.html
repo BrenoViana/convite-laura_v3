@@ -1,125 +1,134 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Lista de Presença — Admin</title>
-<meta name="robots" content="noindex,nofollow" />
-<style>
-:root{--bg:#0b0b0e;--card:#14141a;--muted:#a9adc1;--text:#eef0f6;--accent:#ff8fb1;--accent2:#ff5f87;--warn:#f59e0b;--ring:rgba(255,143,177,.35)}
-*{box-sizing:border-box}html,body{height:100%}
-body{margin:0;font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;color:var(--text);background:
-radial-gradient(1200px 800px at -10% -10%,rgba(255,143,177,.18),transparent 60%),
-radial-gradient(900px 600px at 110% 110%,rgba(255,95,135,.12),transparent 60%),var(--bg);padding:24px}
-.wrap{max-width:1280px;margin:0 auto}
-.card{background:var(--card);border-radius:16px;padding:24px;border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.02)}
-h1{font-size:clamp(20px,3vw,26px);margin:0 0 10px}.muted{color:var(--muted)}
-.toolbar{display:flex;gap:10px;align-items:center;margin:14px 0 18px;flex-wrap:wrap}
-input[type=password]{flex:1 1 320px;max-width:520px;height:42px;background:#0f0f14;color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:0 12px;outline:none}
-input[type=password]:focus{box-shadow:0 0 0 3px var(--ring);border-color:transparent}
-.btn{height:42px;padding:0 14px;border-radius:10px;border:none;color:#0b0b0e;background:linear-gradient(180deg,var(--accent),var(--accent2));font-weight:600;cursor:pointer}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn.secondary{background:#20202a;color:var(--text);border:1px solid rgba(255,255,255,.12)}
-.btn.warn{background:linear-gradient(180deg,#ffd29d,#f59e0b);color:#1a1206}
-.summary{margin:4px 0 14px;color:var(--muted)}
-table{width:100%;border-collapse:separate;border-spacing:0;border-radius:12px;border:1px solid rgba(255,255,255,.08);overflow:hidden}
-thead th{text-align:left;font-weight:700;font-size:13px;letter-spacing:.02em;color:#d6daec;background:rgba(255,255,255,.04);padding:10px 12px;position:sticky;top:0;z-index:1}
-tbody td{padding:10px 12px;border-top:1px solid rgba(255,255,255,.06)}
-tbody tr:nth-child(odd){background:rgba(255,255,255,.02)}
-.pill{display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:12px;font-weight:700}
-.pill.ok{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.35)}
-.pill.no{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.35)}
-.right{text-align:right}
-.nowrap{white-space:nowrap}
-</style>
+  <meta charset="utf-8" />
+  <title>RSVP • Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{--ink:#e9e9f2;--panel:#12121b;--muted:#9aa0a6;--danger:#ff6b6b;--ok:#4caf50;--accent:#d95679}
+    html,body{height:100%}
+    body{margin:0;background:#0d0d12;color:var(--ink);font:14px/1.4 system-ui,Segoe UI,Roboto}
+    .wrap{max-width:1000px;margin:34px auto;padding:0 18px}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);padding:22px}
+    h1{margin:0 0 6px}
+    .hint{color:var(--muted);margin-bottom:16px}
+    input[type="password"],input[type="text"]{width:100%;max-width:460px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:#0e0e15;color:#fff;padding:10px 12px}
+    .row{display:flex;gap:10px;align-items:center;margin:10px 0 18px}
+    .btn{appearance:none;border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
+    .btn.p{background:var(--accent);color:white}
+    .btn.o{background:transparent;color:var(--ink);border:1px solid rgba(255,255,255,.18)}
+    .btn.d{background:var(--danger);color:#fff;margin-left:auto}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{border-top:1px solid rgba(255,255,255,.08);padding:10px}
+    th{font-weight:600;text-align:left;color:#d6d6e2;background:rgba(255,255,255,.02)}
+    .stats{margin:6px 0 10px;color:#cfd3da}
+    .kids{color:#cdd}
+    .ok{color:var(--ok)}
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="card">
-    <h1>Lista de Presença — Admin</h1>
-    <p class="muted">Cole o <strong>ADMIN_TOKEN</strong> e use os botões abaixo. (Nada é enviado além das chamadas à API.)</p>
+  <div class="wrap">
+    <div class="card">
+      <h1>Lista de Presença – Admin (uso local)</h1>
+      <p class="hint">Seu token <strong>ADMIN_TOKEN</strong> não é enviado a lugar nenhum além da chamada à API. Ele é salvo no <em>localStorage</em> deste navegador.</p>
 
-    <div class="toolbar">
-      <input id="token" type="password" placeholder="Cole aqui o ADMIN_TOKEN" autocomplete="off" />
-      <button id="load" class="btn">Carregar lista</button>
-      <button id="csv" class="btn secondary">Baixar CSV</button>
-      <button id="json" class="btn secondary">Baixar JSON</button>
-      <div style="flex:1"></div>
-      <button id="clear" class="btn warn">⚠️ Limpar tudo</button>
-    </div>
+      <div class="row">
+        <input id="tok" type="password" placeholder="Cole o ADMIN_TOKEN…" />
+        <button class="btn p" id="load">Carregar lista</button>
+        <button class="btn o" id="csv">Baixar CSV</button>
+        <button class="btn o" id="json">Baixar JSON</button>
+        <button class="btn d" id="clear">Limpar tudo</button>
+      </div>
 
-    <div id="summary" class="summary">—</div>
+      <div id="stats" class="stats">—</div>
 
-    <div style="overflow:auto">
-      <table>
+      <table id="tbl">
         <thead>
           <tr>
-            <th class="nowrap">Data/Hora</th>
-            <th>Nome</th>
-            <th>Presença</th>
-            <th class="right">Adultos</th>
-            <th class="right">Crianças</th>
-            <th>Acompanhante?</th>
-            <th>Nome acompanhante</th>
-            <th>Crianças (detalhes)</th>
-            <th>IP</th>
+            <th>Data/Hora</th><th>Nome</th><th>Presença</th>
+            <th>Adultos</th><th>Acomp.</th><th>Crianças</th>
+            <th>Telefone</th><th>Mensagem</th><th>IP</th>
           </tr>
         </thead>
-        <tbody id="tbody"></tbody>
+        <tbody></tbody>
       </table>
     </div>
   </div>
-</div>
 
 <script>
 const $ = s => document.querySelector(s);
-const tIn = $('#token'), tbody = $('#tbody'), summary = $('#summary');
-const btnLoad = $('#load'), btnCSV = $('#csv'), btnJSON = $('#json'), btnClear = $('#clear');
+const tok = $('#tok'); const stats = $('#stats');
+const body = $('#tbl tbody');
 
-tIn.value = localStorage.getItem('rsvp_admin_token') || '';
-tIn.addEventListener('input', ()=>localStorage.setItem('rsvp_admin_token', tIn.value));
+(function init(){
+  const saved = localStorage.getItem('RSVP_ADMIN_TOKEN');
+  if(saved) tok.value = saved;
+})();
+function hdr(){ return { 'Authorization':'Bearer '+tok.value }; }
+function saveTok(){ localStorage.setItem('RSVP_ADMIN_TOKEN', tok.value.trim()); }
 
-function auth(){ const t=tIn.value.trim(); if(!t) throw new Error('Informe o ADMIN_TOKEN.'); return {'Authorization':'Bearer '+t}; }
-const esc = s => (s||'').replace(/[<>&]/g, m=>({ '<':'&lt;','>':'&gt;','&':'&amp;' }[m]));
-const fmtTs = iso => { try{ return new Date(iso).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'});}catch{ return iso; } };
-
-function render(list){
-  tbody.innerHTML=''; let pres=0, ad=0, ch=0;
-  list.forEach(r=>{
-    if(r.attending) pres++; ad+=+r.adults||0; ch+=+r.children||0;
-
-    const companion = !!(r.details && r.details.companion && r.details.companion.name);
-    const compName  = (r.details && r.details.companion && r.details.companion.name) ? r.details.companion.name : '';
-    const kidsArr   = (r.details && Array.isArray(r.details.kids)) ? r.details.kids : [];
-    const kidsStr   = kidsArr.map(k => `${(k.name||'')} (${Number(k.age)||0})`).join('; ');
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="nowrap">${fmtTs(r.ts)}</td>
-      <td>${esc(r.name)}</td>
-      <td>${r.attending?'<span class="pill ok">Sim</span>':'<span class="pill no">Não</span>'}</td>
-      <td class="right">${r.adults??0}</td>
-      <td class="right">${r.children??0}</td>
-      <td>${companion?'<span class="pill ok">Sim</span>':'<span class="pill no">Não</span>'}</td>
-      <td>${esc(compName)}</td>
-      <td>${esc(kidsStr)}</td>
-      <td>${r.ip??''}</td>`;
-    tbody.appendChild(tr);
-  });
-  summary.textContent = `Registros: ${list.length} • Presentes: ${pres} • Adultos: ${ad} • Crianças: ${ch}`;
+function fmtKids(rec){
+  if (Array.isArray(rec.kids) && rec.kids.length){
+    return rec.kids.map(k => `${k.name} (${k.age})`).join(', ');
+  }
+  if (typeof rec.childrenCount === 'number') return String(rec.childrenCount);
+  if (typeof rec.children === 'number') return String(rec.children);
+  return '';
+}
+function tr(rec){
+  const d = new Date(rec.ts);
+  return `<tr>
+    <td>${d.toLocaleString('pt-BR')}</td>
+    <td>${rec.name||''}</td>
+    <td>${rec.attending?'Sim':'Não'}</td>
+    <td>${rec.adults||0}</td>
+    <td>${rec.hasCompanion?(rec.companionName||'Sim'):''}</td>
+    <td class="kids">${fmtKids(rec)}</td>
+    <td>${rec.phone||''}</td>
+    <td>${rec.message||''}</td>
+    <td>${rec.ip||''}</td>
+  </tr>`;
 }
 
-async function list(){ const r=await fetch('/api/rsvp?list=1',{headers:auth()}); if(!r.ok) throw new Error('Falha ao carregar: '+r.status); return r.json(); }
+async function load(){
+  saveTok();
+  body.innerHTML = '';
+  stats.textContent = 'Carregando…';
+  const r = await fetch('/api/rsvp?list=1', { headers: hdr() });
+  if(!r.ok){ stats.textContent = 'Erro ao carregar ('+r.status+')'; return; }
+  const arr = await r.json();
+  let presentes=0, ad=0, ch=0;
+  for(const rec of arr){
+    if(rec.attending){ presentes++; ad += Number(rec.adults||0); ch += (Number(rec.childrenCount||rec.children||0)); }
+    body.insertAdjacentHTML('beforeend', tr(rec));
+  }
+  stats.textContent = `Registros: ${arr.length} • Presentes: ${presentes} • Adultos: ${ad} • Crianças: ${ch}`;
+}
 
-btnLoad.onclick = async()=>{ try{ render(await list()); }catch(e){ alert(e.message); } };
-btnCSV.onclick  = async()=>{ try{ const r=await fetch('/api/rsvp/export?format=csv',{headers:auth()}); if(!r.ok) throw 0;
-  const b=await r.blob(); const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:`rsvp-${new Date().toISOString().slice(0,10)}.csv`}); document.body.appendChild(a); a.click(); a.remove(); }catch{ alert('Falha ao exportar CSV'); } };
-btnJSON.onclick = async()=>{ try{ const r=await fetch('/api/rsvp/export?format=json',{headers:auth()}); if(!r.ok) throw 0;
-  const b=await r.blob(); const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:`rsvp-${new Date().toISOString().slice(0,10)}.json`}); document.body.appendChild(a); a.click(); a.remove(); }catch{ alert('Falha ao exportar JSON'); } };
-btnClear.onclick = async()=>{ if(!confirm('Tem certeza? Esta ação apaga todos os registros.')) return;
-  try{ const r=await fetch('/api/rsvp/clear?confirm=YES',{method:'POST',headers:auth()}); if(!r.ok) throw 0; alert('OK, registros removidos.'); render([]); }catch{ alert('Falha ao limpar.'); } };
+async function dl(kind){
+  saveTok();
+  const r = await fetch('/api/rsvp/export?format='+kind, { headers: hdr() });
+  if(!r.ok){ alert('Falha ('+r.status+')'); return; }
+  const blob = await r.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rsvp-'+new Date().toISOString().slice(0,10)+'.'+kind;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
-if (tIn.value) btnLoad.click();
+async function clearAll(){
+  if(!confirm('Tem certeza? Isso apaga tudo.')) return;
+  saveTok();
+  const r = await fetch('/api/rsvp/clear?confirm=YES', { method:'POST', headers: hdr() });
+  if(!r.ok){ alert('Falha ('+r.status+')'); return; }
+  await load();
+}
+
+$('#load').onclick = load;
+$('#csv').onclick = () => dl('csv');
+$('#json').onclick = () => dl('json');
+$('#clear').onclick = clearAll;
 </script>
 </body>
 </html>

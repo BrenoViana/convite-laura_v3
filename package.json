@@ -1,58 +1,32 @@
-﻿{
-    "name":  "convite-laura-v3",
-    "version":  "0.0.0",
-    "scripts":  {
-                    "start":  "ng serve -o",
-                    "build":  "ng build",
-                    "build:cf":  "ng build --base-href=/",
-                    "cf:post":  "TARGET=dist/convite-laura_v3; if [ -d dist/convite-laura_v3/browser ]; then TARGET=dist/convite-laura_v3/browser; fi; cp src/_redirects \"$TARGET/_redirects\" 2\u003e/dev/null || true; cp src/_headers \"$TARGET/_headers\" 2\u003e/dev/null || true; echo \"Using output: $TARGET\"; ls -lah \"$TARGET\" || true",
-                    "build:gh":  "ng build --base-href=/convite-laura_v3/",
-                    "gh:post":  "cp dist/convite-laura_v3/index.html dist/convite-laura_v3/browser/404.html"
-                },
-    "prettier":  {
-                     "printWidth":  100,
-                     "singleQuote":  true,
-                     "overrides":  [
-                                       {
-                                           "files":  "*.html",
-                                           "options":  {
-                                                           "parser":  "angular"
-                                                       }
-                                       }
-                                   ]
-                 },
-    "private":  true,
-    "dependencies":  {
-                         "@angular/animations":  "20.3.6",
-                         "@angular/common":  "^20.3.0",
-                         "@angular/compiler":  "^20.3.0",
-                         "@angular/core":  "^20.3.0",
-                         "@angular/forms":  "^20.3.0",
-                         "@angular/platform-browser":  "^20.3.0",
-                         "@angular/router":  "^20.3.0",
-                         "@angular/service-worker":  "^20.3.6",
-                         "rxjs":  "~7.8.0",
-                         "swiper":  "^12.0.2",
-                         "tslib":  "^2.3.0",
-                         "zone.js":  "~0.15.0"
-                     },
-    "devDependencies":  {
-                            "@angular/build":  "^20.3.6",
-                            "@angular/cli":  "^20.3.6",
-                            "@angular/compiler-cli":  "^20.3.0",
-                            "@types/jasmine":  "~5.1.0",
-                            "jasmine-core":  "~5.9.0",
-                            "karma":  "~6.4.0",
-                            "karma-chrome-launcher":  "~3.2.0",
-                            "karma-coverage":  "~2.2.0",
-                            "karma-jasmine":  "~5.1.0",
-                            "karma-jasmine-html-reporter":  "~2.1.0",
-                            "sharp":  "^0.34.4",
-                            "shx":  "^0.4.0",
-                            "typescript":  "~5.9.2"
-                        },
-    "engines":  {
-                    "node":  "\u003e=20 \u003c21",
-                    "npm":  "\u003e=10"
-                }
+{
+  "name": "convite-laura_v3",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve -o",
+    "build": "ng build",
+    "build:cf": "ng build --base-href=/",
+    "cf:post": "TARGET=dist/convite-laura_v3; if [ -d dist/convite-laura_v3/browser ]; then TARGET=dist/convite-laura_v3/browser; fi; cp src/_headers \"$TARGET/_headers\" 2>/dev/null || true"
+  },
+  "dependencies": {
+    "@angular/animations": "^18.2.0",
+    "@angular/common": "^18.2.0",
+    "@angular/compiler": "^18.2.0",
+    "@angular/core": "^18.2.0",
+    "@angular/forms": "^18.2.0",
+    "@angular/platform-browser": "^18.2.0",
+    "@angular/platform-browser-dynamic": "^18.2.0",
+    "@angular/router": "^18.2.0",
+    "rxjs": "^7.8.1",
+    "tslib": "^2.6.2",
+    "zone.js": "^0.14.10"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^18.2.0",
+    "@angular/cli": "^18.2.0",
+    "@angular/compiler-cli": "^18.2.0",
+    "@cloudflare/workers-types": "^4.20251014.0",
+    "typescript": "~5.5.4"
+  }
 }
