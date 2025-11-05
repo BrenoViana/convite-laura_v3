@@ -2,8 +2,6 @@
 import { CommonModule } from "@angular/common";
 import { environment } from "../environments/environment";
 
-// Estes componentes já existiam no projeto.
-// Se ainda não estiverem presentes, comente os imports e as tags no HTML.
 import { CountdownComponent } from "./components/countdown/countdown.component";
 import { CarouselSwiperComponent } from "./components/carousel-swiper/carousel-swiper.component";
 import { PetalsCanvasComponent } from "./components/petals-canvas/petals-canvas.component";
@@ -18,13 +16,17 @@ import { PetalsCanvasComponent } from "./components/petals-canvas/petals-canvas.
 export class AppComponent {
   env = environment;
 
-  // Fotos seguras (evita quebra se array estiver vazio)
+  // Modais
+  giftsOpen = false;
+  rsvpOpen  = false;
+
+  // Fotos seguras
   get photosSafe(): string[] {
     const arr = Array.isArray(this.env.photos) ? this.env.photos : [];
     return arr.length ? arr : ["/assets/photos/placeholder.svg"];
   }
 
-  // Data/Hora (pt-BR)
+  // Data/Hora
   private eventDate = new Date(this.env.eventDateISO);
   get dateStr(): string {
     return this.eventDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -42,7 +44,7 @@ export class AppComponent {
     return this.env.icsPath || "assets/event.ics";
   }
 
-  // Endereço: destaco venue após "|", e separo CEP da string principal
+  // Endereço
   addressMain = "";
   cep: string | null = null;
   venue: string | null = null;
@@ -59,4 +61,27 @@ export class AppComponent {
       ? addrAndCepRaw.replace(new RegExp(`\\s*,?\\s*${this.cep}\\s*`), "").trim()
       : addrAndCepRaw.trim();
   }
+
+  // Presentes (modal)
+  openGifts(ev?: Event){ ev?.preventDefault(); this.giftsOpen = true; }
+  closeGifts(){ this.giftsOpen = false; }
+
+  async copyAddress(){
+    const text = "Rua Treze de Maio, nº 300 - Bairro São Luiz - Antônio Prado/RS - CEP: 95250-000";
+    try {
+      await navigator.clipboard.writeText(text);
+      // feedback simples
+      alert("Endereço copiado!");
+    } catch {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); ta.remove();
+      alert("Endereço copiado!");
+    }
+  }
+
+  // RSVP (modal inicial)
+  openRsvp(ev?: Event){ ev?.preventDefault(); this.rsvpOpen = true; }
+  closeRsvp(){ this.rsvpOpen = false; }
 }
