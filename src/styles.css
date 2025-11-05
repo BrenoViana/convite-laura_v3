@@ -1,0 +1,35 @@
+﻿/* ===== Reset mínimo + layout estável ===== */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;                 /* elimina margin default do body */
+  padding: 0;
+}
+
+body {
+  overflow-x: hidden;        /* evita “empurrão” por overflow horizontal */
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+/* Lógicas + safe-area */
+:root {
+  --page-pad: clamp(12px, 4vw, 24px);
+}
+
+/* Utilitário: centralização horizontal */
+.centered {
+  width: 100%;
+  max-width: 560px;          /* limite no desktop */
+  margin-inline: auto;       /* centraliza HORIZONTALMENTE */
+  padding-block: var(--page-pad);
+  padding-inline:
+    max(var(--page-pad), env(safe-area-inset-left))
+    max(var(--page-pad), env(safe-area-inset-right));
+}
+
+/* Imagens/mídias nunca estouram o container */
+img, video, canvas, svg { max-width: 100%; height: auto; display: block; }

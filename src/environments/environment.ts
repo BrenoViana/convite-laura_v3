@@ -1,26 +1,36 @@
 ﻿export const environment = {
   production: false,
-  birthdayGirl: "Laura",
+
+  // Data/hora do evento (ajustada para 20:00 -03:00)
   eventDateISO: "2025-12-19T20:00:00-03:00",
-  addressText:
-    "Rua Alfredina Amaral, 75 - Milionários, Belo Horizonte/MG, 30620-220 | Casa da Alegria",
-  mapsQuery:
-    "Rua%20Alfredina%20Amaral%2C%2075%20-%20Milion%C3%A1rios%2C%20Belo%20Horizonte%2FMG%2C%2030620-220%20%7C%20Casa%20da%20Alegria",
-  theme: { petalWhite: "#FFF7FA", sakuraPink: "#FFB7C5" },
+
+  // Endereço com venue (após "|") e CEP opcional dentro do texto:
+  // A parte antes do "|" é o endereço principal; se houver CEP nele, o CEP será exibido ao lado.
+  addressText: "R. Alfredina Amaral, 75 - Milionários, Belo Horizonte/MG | Casa da Alegria",
+
+  // Query que será usada no Google Maps (altere se quiser usar um ponto específico)
+  mapsQuery: "R. Alfredina Amaral, 75 - Milionários, Belo Horizonte - MG, 30620-220",
+
+  // Caminho do arquivo ICS
+  icsPath: "assets/event.ics",
+
+  // URLs de ações
+  giftListUrl: "https://example.com/lista-de-presentes",
+  rsvpUrl: "/api/rsvp", // ou uma página/form externo caso prefira
+
+  // Galeria (troque pelos seus arquivos/links)
   photos: [
-    "assets/photos/01.webp",
-    "assets/photos/02.webp",
-    "assets/photos/03.webp",
-    "assets/photos/04.webp",
-    "assets/photos/05.webp",
-    "assets/photos/06.webp",
-    "assets/photos/07.webp",
-    "assets/photos/08.webp"/*,
-    "assets/photos/09.webp",
-    "assets/photos/10.webp",
-    "assets/photos/11.webp",
-    "assets/photos/12.webp"*/
-  ],
-  giftListUrl: "#",
-  rsvpUrl: "#"
+    "/assets/photos/01.jpg",
+    "/assets/photos/02.jpg",
+    "/assets/photos/03.jpg",
+    "/assets/photos/04.jpg",
+    "/assets/photos/05.jpg",
+    "/assets/photos/06.jpg",
+    "/assets/photos/07.jpg",
+    "/assets/photos/08.jpg",
+    "/assets/photos/09.jpg",
+    "/assets/photos/10.jpg",
+    "/assets/photos/11.jpg",
+    "/assets/photos/12.jpg"
+  ]
 };

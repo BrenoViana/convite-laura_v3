@@ -1,110 +1,61 @@
-﻿<!-- Hero simples (sem <petals-canvas>) -->
-<header class="hero">
-  <div class="hero__inner">
-    <h1>Laura • 1 aninho</h1>
-    <p class="hero__subtitle">Venha celebrar com a gente!</p>
+﻿<petals-canvas></petals-canvas>
 
-    <!-- Chips de data/hora/lugar (sem <countdown>) -->
-    <div class="chips">
-      <span class="chip">{{ dateStr }}</span>
-      <span class="chip">{{ timeStr }}</span>
-      <a class="chip chip--link" [href]="mapsUrl" rel="noopener" target="_blank">Ver no mapa</a>
-      <a class="chip chip--link" [href]="icsUrl" download>Salvar no calendário</a>
+<section class="container">
+  <article class="card invitation">
+    <!-- pílula “1 aninho” centralizada -->
+    <div class="badge-wrap">
+      <div class="badge event-badge" role="status" aria-label="1 aninho">
+        <span class="dot" aria-hidden="true">🌸</span>
+        <span>1 aninho</span>
+      </div>
     </div>
 
-    <!-- CTA principal: abre o modal de RSVP -->
-    <button class="btn btn-primary" type="button" (click)="openRsvp()">
-      Confirmar presença
-    </button>
-  </div>
-</header>
+    <h1 class="title">Laura faz aniversário!</h1>
+    <p class="subtitle">Um ano de amor e descobertas</p>
 
-<!-- (Opcional) Fotos: removi <carousel-swiper>. Se quiser, coloque suas imagens aqui. -->
-<!--
-<section class="photos" *ngIf="photosSafe?.length">
-  <div class="photos__rail">
-    <img *ngFor="let src of photosSafe" [src]="src" alt="foto" loading="lazy" />
-  </div>
-</section>
--->
+    <countdown [targetISO]="env.eventDateISO"></countdown>
 
-<!-- FAB engrenagem (admin) -->
-<a class="fab-gear" href="/tools/admin.html" title="Admin">
-  ⚙️
-</a>
-
-<!-- Modal RSVP -->
-<div class="modal-backdrop" *ngIf="rsvpOpen" (click)="closeRsvp($event)"></div>
-
-<div class="modal" *ngIf="rsvpOpen" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
-  <div class="modal__header">
-    <h2 id="rsvpTitle">Confirme sua presença</h2>
-    <button class="icon-btn" type="button" (click)="closeRsvp()" aria-label="Fechar">✖</button>
-  </div>
-
-  <form class="modal__body" [formGroup]="form" (ngSubmit)="submitRsvp()">
-    <!-- Nome -->
-    <label class="form-row">
-      <span>Seu nome*</span>
-      <input id="name" type="text" formControlName="name" placeholder="Ex.: Breno Viana" />
-      <small class="err" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">
-        Informe pelo menos 2 caracteres.
-      </small>
-    </label>
-
-    <!-- Acompanhante -->
-    <div class="form-row form-row--inline">
-      <label class="check">
-        <input type="checkbox" formControlName="hasCompanion" />
-        <span>Levarei acompanhante</span>
-      </label>
+    <div class="media">
+      <div class="ratio">
+        <carousel-swiper [images]="photosSafe"></carousel-swiper>
+      </div>
     </div>
 
-    <label class="form-row" *ngIf="form.get('hasCompanion')?.value">
-      <span>Nome do acompanhante*</span>
-      <input type="text" formControlName="companionName" placeholder="Ex.: Maria" />
-      <small class="err" *ngIf="form.get('companionName')?.touched && form.get('companionName')?.invalid">
-        Informe pelo menos 2 caracteres.
-      </small>
-    </label>
-
-    <!-- Crianças -->
-    <div class="form-row form-row--inline">
-      <label class="check">
-        <input type="checkbox" formControlName="hasChildren" />
-        <span>Levarei crianças</span>
-      </label>
-    </div>
-
-    <div class="kids" *ngIf="form.get('hasChildren')?.value">
-      <div class="kid-row" *ngFor="let kid of children.controls; let i = index" [formGroup]="kid">
-        <div class="kid-col">
-          <label>
-            <span>Nome*</span>
-            <input type="text" formControlName="name" placeholder="Nome da criança" />
-          </label>
+    <section class="info">
+      <div class="row">
+        <div class="ico" aria-hidden="true">🗓️</div>
+        <div class="col">
+          <div class="label">Quando</div>
+          <div class="chips">
+            <span class="chip">{{ dateStr }}</span>
+            <span class="chip">{{ timeStr }}</span>
+          </div>
         </div>
-        <div class="kid-col kid-col--age">
-          <label>
-            <span>Idade*</span>
-            <input type="number" formControlName="age" min="0" max="15" placeholder="0–15" />
-          </label>
-        </div>
-        <button class="icon-btn danger" type="button" (click)="onDelChild(i)" aria-label="Remover criança">🗑️</button>
       </div>
 
-      <button class="btn btn-ghost" type="button" (click)="onAddChild()">+ adicionar criança</button>
-    </div>
+      <div class="row">
+        <div class="ico" aria-hidden="true">📍</div>
+        <div class="col">
+          <div class="label">Local</div>
+          <div class="address">
+            <span class="addr">
+              {{ addressMain }}<span *ngIf="cep">, {{ cep }}</span>
+            </span>
+            <span *ngIf="venue" class="venue-pill">{{ venue }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- Status envio -->
-    <div class="status" *ngIf="isSubmitting">Enviando…</div>
-    <div class="status ok" *ngIf="submitOk">Presença registrada. Obrigado! 🎉</div>
-    <div class="status err" *ngIf="submitError">Falha ao enviar. Tente novamente.</div>
+    <section class="actions">
+      <a class="btn" [href]="mapsUrl" target="_blank" rel="noopener">Abrir no mapa</a>
+      <a class="btn" [href]="icsUrl" download="Laura-1Aninho-19-12-2025.ics">Salvar na agenda</a>
+      <a class="btn" [href]="env.giftListUrl || '#'" target="_blank" rel="noopener">Sugestão de presentes</a>
+      <a class="btn btn--primary" [href]="env.rsvpUrl || '#'" target="_blank" rel="noopener">Confirmar presença</a>
+    </section>
 
-    <!-- Ações -->
-    <div class="modal__actions">
-      <button class="btn" type="button" (click)="closeRsvp()">Cancelar</button>
-      <button class="btn btn-primary" type="submit" [disabled]="isSubmitting">Confirmar</button>
-    </div>
-  </form>
-</div>
+    <footer class="footnote">
+      Sua presença vai deixar tudo ainda mais especial ✨
+    </footer>
+  </article>
+</section>
