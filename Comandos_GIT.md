@@ -10,7 +10,7 @@ ng build --configuration production
 
 git checkout develop
 git add -A
-git commit -m "feat(XXX): XXX"
+git commit -m "feat(Carrossel): Seleção das fotos que serão exibidas."
 git push -u origin develop
 
 # ------------------------------ #
@@ -27,7 +27,7 @@ git pull
 # faça o merge na main
 git checkout main
 git pull
-git merge --no-ff develop -m "merge(develop): XXX"
+git merge --no-ff develop -m "merge(develop): Seleção das fotos que serão exibidas."
 
 # publique
 git push origin main
@@ -36,5 +36,5 @@ git push origin main
 
 # Tag #
 
-git tag -a v3.1.0 -m "RSVP modal + gifts popup + autoplay + layout"
-git push origin v3.1.0
+git tag -a v3.1.1 -m "(Carrossel): Seleção das fotos que serão exibidas."
+git push origin v3.1.1

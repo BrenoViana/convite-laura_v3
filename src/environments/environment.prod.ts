@@ -29,8 +29,6 @@
     "/assets/photos/06.jpg",
     "/assets/photos/07.jpg",
     "/assets/photos/08.jpg",
-    "/assets/photos/09.jpg",
-    "/assets/photos/10.jpg",
-    "/assets/photos/11.jpg"
+    "/assets/photos/09.jpg"
   ]
 };
