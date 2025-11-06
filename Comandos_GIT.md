@@ -15,7 +15,7 @@ git pull origin develop || true
 # adicionar mudanças
 git add -A
 
-git commit -m "feat(rsvp): Ajuste do modal RSVP, removendo o campo de acompanhante"
+git commit -m "feat(rsvp): Teste de envio do modal"
 git push -u origin develop
 
 # ------------------------------ #
@@ -32,7 +32,7 @@ git fetch origin
 
 git checkout main
 git pull origin main
-git merge --no-ff develop -m "merge(develop) - (rsvp): Ajuste do modal RSVP, removendo o campo de acompanhante"
+git merge --no-ff develop -m "merge(develop) - (rsvp): Teste de envio do modal"
 
 # publique
 git push origin main
@@ -40,5 +40,5 @@ git push origin main
 # ------------------------------ #
 
 # Tag #
-git tag -a v3.1.3 -m "(rsvp): Ajuste do modal RSVP, removendo o campo de acompanhante"
+git tag -a v3.1.3 -m "(rsvp): Teste de envio do modal"
 git push origin v3.1.3
