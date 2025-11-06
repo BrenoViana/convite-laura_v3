@@ -1,32 +1,72 @@
 ﻿import { Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { environment } from "../environments/environment";
 
+// Componentes existentes
 import { CountdownComponent } from "./components/countdown/countdown.component";
 import { CarouselSwiperComponent } from "./components/carousel-swiper/carousel-swiper.component";
 import { PetalsCanvasComponent } from "./components/petals-canvas/petals-canvas.component";
 
+type KidFG = {
+  name: FormControl<string | null>;
+  age: FormControl<number | null>;
+};
+
 @Component({
   selector: "app-root",
   standalone: true,
-  imports: [CommonModule, CountdownComponent, CarouselSwiperComponent, PetalsCanvasComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CountdownComponent,
+    CarouselSwiperComponent,
+    PetalsCanvasComponent
+  ],
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"]
 })
 export class AppComponent {
   env = environment;
 
-  // Modais
+  // ======= Estado dos modais =======
   giftsOpen = false;
-  rsvpOpen  = false;
+  rsvpOpen = false;
 
-  // Fotos seguras
+  // ======= Form RSVP (sem acompanhante) =======
+  form: FormGroup<{
+    name: FormControl<string | null>;
+    hasChildren: FormControl<boolean>;
+    children: FormArray<FormGroup<KidFG>>;
+  }>;
+
+  // status de envio
+  isSubmitting = false;
+  submitOk = false;
+  submitError = false;
+
+  constructor(private fb: FormBuilder) {
+    this.form = this.fb.group({
+      name: this.fb.control<string | null>(null, { validators: [Validators.required, Validators.minLength(2)] }),
+      hasChildren: this.fb.control<boolean>(false, { nonNullable: true }),
+      children: this.fb.array<FormGroup<KidFG>>([])
+    });
+
+    // limpa crianças quando desmarca
+    this.form.get('hasChildren')!.valueChanges.subscribe(val => {
+      if (!val) this.children.clear();
+    });
+
+    this.prepareAddressParts();
+  }
+
+  // ======= Fotos seguras para o carrossel =======
   get photosSafe(): string[] {
     const arr = Array.isArray(this.env.photos) ? this.env.photos : [];
     return arr.length ? arr : ["/assets/photos/placeholder.svg"];
   }
 
-  // Data/Hora
+  // ======= Data/Hora (pt-BR) =======
   private eventDate = new Date(this.env.eventDateISO);
   get dateStr(): string {
     return this.eventDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -35,7 +75,7 @@ export class AppComponent {
     return this.eventDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   }
 
-  // Links
+  // ======= Links =======
   get mapsUrl(): string {
     const q = encodeURIComponent(this.env.mapsQuery || this.addressMain);
     return `https://www.google.com/maps/search/?api=1&query=${q}`;
@@ -44,12 +84,12 @@ export class AppComponent {
     return this.env.icsPath || "assets/event.ics";
   }
 
-  // Endereço
+  // ======= Endereço (principal/CEP/venue) =======
   addressMain = "";
   cep: string | null = null;
   venue: string | null = null;
 
-  constructor() {
+  private prepareAddressParts() {
     const raw = this.env.addressText || "";
     const [addrAndCepRaw, venueRaw] = raw.split("|").map(s => (s ?? "").trim());
     this.venue = venueRaw || null;
@@ -62,26 +102,103 @@ export class AppComponent {
       : addrAndCepRaw.trim();
   }
 
-  // Presentes (modal)
-  openGifts(ev?: Event){ ev?.preventDefault(); this.giftsOpen = true; }
-  closeGifts(){ this.giftsOpen = false; }
+  // ======= Gifts modal =======
+  openGifts(ev?: Event) {
+    ev?.preventDefault();
+    this.giftsOpen = true;
+  }
+  closeGifts() {
+    this.giftsOpen = false;
+  }
 
-  async copyAddress(){
-    const text = "Rua Treze de Maio, nº 300 - Bairro São Luiz - Antônio Prado/RS - CEP: 95250-000";
+  async copyAddress() {
+    const address = "Rua Treze de Maio, 300 – São Luiz, Antônio Prado/RS | 95250-000";
     try {
-      await navigator.clipboard.writeText(text);
-      // feedback simples
-      alert("Endereço copiado!");
+      await navigator.clipboard.writeText(address);
+      alert("Endereço copiado! 📋");
     } catch {
-      // fallback
       const ta = document.createElement('textarea');
-      ta.value = text; document.body.appendChild(ta);
-      ta.select(); document.execCommand('copy'); ta.remove();
-      alert("Endereço copiado!");
+      ta.value = address;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      alert("Endereço copiado! 📋");
     }
   }
 
-  // RSVP (modal inicial)
-  openRsvp(ev?: Event){ ev?.preventDefault(); this.rsvpOpen = true; }
-  closeRsvp(){ this.rsvpOpen = false; }
+  // ======= RSVP modal =======
+  openRsvp(ev?: Event) {
+    ev?.preventDefault();
+    this.submitOk = false;
+    this.submitError = false;
+    this.isSubmitting = false;
+    this.rsvpOpen = true;
+  }
+  closeRsvp() {
+    this.rsvpOpen = false;
+  }
+
+  // ======= Children helpers =======
+  get children(): FormArray<FormGroup<KidFG>> {
+    return this.form.get('children') as FormArray<FormGroup<KidFG>>;
+  }
+
+  addChild() {
+    const group = this.fb.group<KidFG>({
+      name: this.fb.control<string | null>(null, { validators: [Validators.required, Validators.minLength(2)] }),
+      age: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(18)] })
+    });
+    this.children.push(group);
+  }
+
+  removeChild(index: number) {
+    this.children.removeAt(index);
+  }
+
+  // ======= Submit RSVP =======
+  async submitRsvp() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.submitOk = false;
+    this.submitError = false;
+
+    const v = this.form.value;
+    const payload = {
+      name: v.name?.trim() ?? "",
+      attending: true,
+      adults: 1, // sem campo de acompanhante
+      children: (v.hasChildren ? this.children.length : 0),
+      kids: (v.hasChildren ? this.children.getRawValue().map(k => ({ name: k.name ?? "", age: k.age ?? 0 })) : [])
+    };
+
+    try {
+      const resp = await fetch("/api/rsvp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await resp.json().catch(() => ({} as any));
+      if (resp.ok && (data?.ok ?? true)) {
+        this.submitOk = true;
+        this.form.reset({
+          name: null,
+          hasChildren: false
+        });
+        this.children.clear();
+        setTimeout(() => this.closeRsvp(), 1200);
+      } else {
+        this.submitError = true;
+      }
+    } catch {
+      this.submitError = true;
+    } finally {
+      this.isSubmitting = false;
+    }
+  }
 }
