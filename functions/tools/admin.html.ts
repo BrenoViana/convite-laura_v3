@@ -1,9 +1,9 @@
 /// <reference types="@cloudflare/workers-types" />
 
 interface Env {
-  ASSETS: Fetcher;            // Pages asset binding padrão
-  ADMIN_USER?: string;        // ex.: "admin"
-  ADMIN_PASSWORD?: string;    // ex.: "sua-senha"
+  ASSETS: Fetcher;
+  ADMIN_USER?: string;
+  ADMIN_PASSWORD?: string;
 }
 
 const unauthorized = () =>
@@ -24,6 +24,5 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   if (!(env.ADMIN_USER && env.ADMIN_PASSWORD)) return unauthorized();
   const creds = parseBasic(request.headers.get("Authorization"));
   if (!creds || creds.user !== env.ADMIN_USER || creds.pass !== env.ADMIN_PASSWORD) return unauthorized();
-
-  return env.ASSETS.fetch(request); // entrega /public/tools/admin.html
+  return env.ASSETS.fetch(request);
 };
