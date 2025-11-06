@@ -1,32 +1,65 @@
 ﻿import { Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { environment } from "../environments/environment";
 
 import { CountdownComponent } from "./components/countdown/countdown.component";
 import { CarouselSwiperComponent } from "./components/carousel-swiper/carousel-swiper.component";
 import { PetalsCanvasComponent } from "./components/petals-canvas/petals-canvas.component";
 
+type KidFG = {
+  name: FormControl<string | null>;
+  age: FormControl<number | null>;
+};
+
 @Component({
   selector: "app-root",
   standalone: true,
-  imports: [CommonModule, CountdownComponent, CarouselSwiperComponent, PetalsCanvasComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CountdownComponent,
+    CarouselSwiperComponent,
+    PetalsCanvasComponent
+  ],
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"]
 })
 export class AppComponent {
   env = environment;
 
-  // Modais
   giftsOpen = false;
-  rsvpOpen  = false;
+  rsvpOpen = false;
 
-  // Fotos seguras
+  form: FormGroup<{
+    name: FormControl<string | null>;
+    hasChildren: FormControl<boolean>;
+    children: FormArray<FormGroup<KidFG>>;
+  }>;
+
+  isSubmitting = false;
+  submitOk = false;
+  submitError = false;
+
+  constructor(private fb: FormBuilder) {
+    this.form = this.fb.group({
+      name: this.fb.control<string | null>(null, { validators: [Validators.required, Validators.minLength(2)] }),
+      hasChildren: this.fb.control<boolean>(false, { nonNullable: true }),
+      children: this.fb.array<FormGroup<KidFG>>([])
+    });
+
+    this.form.get('hasChildren')!.valueChanges.subscribe(val => {
+      if (!val) this.children.clear();
+    });
+
+    this.prepareAddressParts();
+  }
+
   get photosSafe(): string[] {
     const arr = Array.isArray(this.env.photos) ? this.env.photos : [];
     return arr.length ? arr : ["/assets/photos/placeholder.svg"];
   }
 
-  // Data/Hora
   private eventDate = new Date(this.env.eventDateISO);
   get dateStr(): string {
     return this.eventDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -35,7 +68,6 @@ export class AppComponent {
     return this.eventDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   }
 
-  // Links
   get mapsUrl(): string {
     const q = encodeURIComponent(this.env.mapsQuery || this.addressMain);
     return `https://www.google.com/maps/search/?api=1&query=${q}`;
@@ -44,12 +76,11 @@ export class AppComponent {
     return this.env.icsPath || "assets/event.ics";
   }
 
-  // Endereço
   addressMain = "";
   cep: string | null = null;
   venue: string | null = null;
 
-  constructor() {
+  private prepareAddressParts() {
     const raw = this.env.addressText || "";
     const [addrAndCepRaw, venueRaw] = raw.split("|").map(s => (s ?? "").trim());
     this.venue = venueRaw || null;
@@ -62,26 +93,21 @@ export class AppComponent {
       : addrAndCepRaw.trim();
   }
 
-  // Presentes (modal)
-  openGifts(ev?: Event){ ev?.preventDefault(); this.giftsOpen = true; }
-  closeGifts(){ this.giftsOpen = false; }
+  openGifts(ev?: Event) { ev?.preventDefault(); this.giftsOpen = true; }
+  closeGifts() { this.giftsOpen = false; }
 
-  async copyAddress(){
-    const text = "Rua Treze de Maio, nº 300 - Bairro São Luiz - Antônio Prado/RS - CEP: 95250-000";
+  async copyAddress() {
+    const address = "Rua Treze de Maio, 300 – São Luiz, Antônio Prado/RS | 95250-000";
     try {
-      await navigator.clipboard.writeText(text);
-      // feedback simples
-      alert("Endereço copiado!");
+      await navigator.clipboard.writeText(address);
+      alert("Endereço copiado! 📋");
     } catch {
-      // fallback
       const ta = document.createElement('textarea');
-      ta.value = text; document.body.appendChild(ta);
-      ta.select(); document.execCommand('copy'); ta.remove();
-      alert("Endereço copiado!");
+      ta.value = address;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      alert("Endereço copiado! 📋");
     }
   }
-
-  // RSVP (modal inicial)
-  openRsvp(ev?: Event){ ev?.preventDefault(); this.rsvpOpen = true; }
-  closeRsvp(){ this.rsvpOpen = false; }
-}

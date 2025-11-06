@@ -323,3 +323,9 @@ input[type="number"] {
 .sugestoes li {
   margin: 4px 0;
 }
+.form-row > span strong {
+  font-weight: 800;
+}
+.form-row.switch > span strong {
+  font-weight: 800;
+}

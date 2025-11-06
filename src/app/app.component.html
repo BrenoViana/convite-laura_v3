@@ -71,13 +71,13 @@
     <h2 id="giftTitle">🍒 A cereja do bolo!</h2>
     <p>Nossa cerejinha está crescendo rápido e deixando tudo mais doce! 🌸💕</p>
     <p>
-      Se quiser presentear, sugerimos comprar online e enviar direto para o nosso endereço — será recebido com muito
-      amor! ✈<br />
-      <br />
+      Se quiser presentear com algum brinquedo, sugerimos comprar online e enviar direto para o nosso endereço —
+      será recebido com muito amor! ✈<br /><br />
       <strong class="copyable" (click)="copyAddress()" title="Clique para copiar">
         Rua Treze de Maio, 300 – São Luiz, Antônio Prado/RS | 95250-000
       </strong>
     </p>
+    <p>Mas caso queira presentear com roupinhas ou outros itens, receberemos no local com todo amor! ❤️</p>
     <p><strong>Sugestões:</strong></p>
     <ul class="sugestoes">
       <li>🍒 <strong>Roupinhas:</strong> 12–18 meses</li>
@@ -90,7 +90,7 @@
   </div>
 </div>
 
-<!-- Modal: RSVP (form completo) -->
+<!-- Modal: RSVP (form sem acompanhante) -->
 <div class="modal-backdrop" *ngIf="rsvpOpen" (click)="closeRsvp()"></div>
 <div class="modal" *ngIf="rsvpOpen" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
   <div class="modal__content" (click)="$event.stopPropagation()">
@@ -99,31 +99,17 @@
     <form class="modal__body" [formGroup]="form" (ngSubmit)="submitRsvp()">
       <!-- Nome -->
       <label class="form-row">
-        <span>Nome completo*</span>
+        <span><strong>Nome Completo *</strong></span>
         <input type="text" formControlName="name" placeholder="Seu nome" autocomplete="name" />
         <small class="err" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">
           Informe seu nome.
         </small>
       </label>
 
-      <!-- Acompanhante -->
-      <label class="form-row switch">
-        <input type="checkbox" formControlName="hasCompanion" />
-        <span>Levará acompanhante?</span>
-      </label>
-
-      <label class="form-row" *ngIf="form.get('hasCompanion')?.value">
-        <span>Nome do acompanhante*</span>
-        <input type="text" formControlName="companionName" placeholder="Nome do acompanhante" />
-        <small class="err" *ngIf="form.get('companionName')?.touched && form.get('companionName')?.invalid">
-          Informe o nome do acompanhante.
-        </small>
-      </label>
-
       <!-- Crianças -->
       <label class="form-row switch">
         <input type="checkbox" formControlName="hasChildren" />
-        <span>Levará crianças?</span>
+        <span><strong>Levará crianças?</strong></span>
       </label>
 
       <div class="kids" *ngIf="form.get('hasChildren')?.value">

@@ -8,26 +8,31 @@ ng build --configuration production
 
 # Branch Develop
 
-git checkout develop
+# criar/sincronizar branch develop
+git checkout -b develop 2>/dev/null || git checkout develop
+git pull origin develop || true
+
+# adicionar mudanças
 git add -A
-git commit -m "feat(Popup "Sugestão"): Alteração no texto"
+
+git commit -m "feat(rsvp): Teste de envio do modal"
 git push -u origin develop
 
 # ------------------------------ #
 
 # Merge da develop na main #
 
-# traga tudo atualizado
-git fetch origin
-
 # garanta que develop está OK
 git checkout develop
 git pull
 
 # faça o merge na main
+# traga tudo atualizado
+git fetch origin
+
 git checkout main
-git pull
-git merge --no-ff develop -m "merge(develop)(Popup "Sugestão") Alteração no texto"
+git pull origin main
+git merge --no-ff develop -m "merge(develop) - (rsvp): Teste de envio do modal"
 
 # publique
 git push origin main
@@ -35,6 +40,5 @@ git push origin main
 # ------------------------------ #
 
 # Tag #
-
-git tag -a v3.1.2 -m "(Popup "Sugestão"): Alteração no texto"
-git push origin v3.1.2
+git tag -a v3.1.3 -m "(rsvp): Teste de envio do modal"
+git push origin v3.1.3
