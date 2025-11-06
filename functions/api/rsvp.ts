@@ -1,10 +1,6 @@
-﻿// Cloudflare Pages Functions - /api/rsvp
-// Um único handler "onRequest" lida com GET, POST e OPTIONS.
-// Evita qualquer ambiguidade do roteamento por método.
-
-export interface Env {
-  RSVP: KVNamespace;          // Binding do KV (no Pages, associe seu namespace como "RSVP")
-  ADMIN_TOKEN?: string;       // Secret para GET/CSV
+﻿export interface Env {
+  RSVP: KVNamespace;
+  ADMIN_TOKEN?: string;
 }
 
 type Kid = { name: string; age: number };
@@ -35,7 +31,6 @@ async function handlePost(request: Request, env: Env) {
   const name = (data as any)?.name;
   if (!name || typeof name !== "string" || !name.trim()) return bad("Nome é obrigatório");
 
-  // Normaliza diferentes formatos (children[] ou kids[])
   let kids: Kid[] = [];
   if (Array.isArray((data as any).children) && typeof (data as any).children[0] === "object") {
     kids = ((data as any).children as any[])
@@ -79,23 +74,13 @@ async function handleGet(request: Request, env: Env) {
     const v = await env.RSVP.get(k.name);
     if (v) items.push(JSON.parse(v));
   }
-
   return json({ ok: true, items, list_complete, cursor: next });
 }
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
-  const { request, env } = ctx;
-  const method = request.method.toUpperCase();
-
-  if (method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: CORS });
-  }
-  if (method === "POST") {
-    return handlePost(request, env);
-  }
-  if (method === "GET") {
-    return handleGet(request, env);
-  }
-
+export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
+  const m = request.method.toUpperCase();
+  if (m === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
+  if (m === "POST")    return handlePost(request, env);
+  if (m === "GET")     return handleGet(request, env);
   return bad("Method Not Allowed", 405);
 };

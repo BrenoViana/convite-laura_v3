@@ -1,9 +1,6 @@
-// Cloudflare Pages Functions - /api/rsvp.csv
-// Exporta CSV com Authorization: Bearer <ADMIN_TOKEN>
-
 export interface Env {
-  RSVP: KVNamespace;     // binding do KV
-  ADMIN_TOKEN?: string;  // secret
+  RSVP: KVNamespace;
+  ADMIN_TOKEN?: string;
 }
 
 const PREFIX = "rsvp:";
@@ -27,7 +24,6 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   do {
     const page = await env.RSVP.list({ prefix: PREFIX, cursor });
     cursor = page.cursor;
-
     for (const k of page.keys) {
       const txt = await env.RSVP.get(k.name);
       if (!txt) continue;
@@ -51,7 +47,6 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   });
 };
 
-// OPTIONS (CORS) opcional
 export const onRequestOptions: PagesFunction<Env> = async () =>
   new Response(null, {
     status: 204,
