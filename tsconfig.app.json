@@ -1,12 +1,13 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./out-tsc/app"
+    "outDir": "./out-tsc/app",
+    "types": [] // Isso pode ser mantido aqui ou em tsconfig.json, ambos funcionam com extends
   },
-  "files": [
-    "src/main.ts"
+  "include": [ // <--- Use 'include' para todos os arquivos .ts
+    "src/**/*.ts"
   ],
-  "include": [
-    "src/**/*.d.ts"
+  "exclude": [ // <--- É bom excluir arquivos de teste explicitamente
+    "src/**/*.spec.ts"
   ]
 }
