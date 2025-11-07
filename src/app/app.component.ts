@@ -1,12 +1,31 @@
-﻿import { Component, OnInit } from "@angular/core";
+﻿// src/app/app.component.ts
+import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { environment } from "../environments/environment";
 import { RsvpService } from "./services/rsvp.service";
+import { firstValueFrom } from 'rxjs'; // Importação para converter Observable em Promise
 
 import { CountdownComponent } from "./components/countdown/countdown.component";
 import { CarouselSwiperComponent } from "./components/carousel-swiper/carousel-swiper.component";
 import { PetalsCanvasComponent } from "./components/petals-canvas/petals-canvas.component";
+
+// Interfaces para garantir a tipagem correta do payload
+interface KidFrontend {
+  name: string;
+  age: number;
+}
+
+interface AppRsvpPayload { // Usando um nome diferente para evitar conflito de nome, mas com a mesma estrutura do RsvpService
+  fullName: string;
+  bringsChildren: boolean;
+  children?: KidFrontend[];
+}
+
+interface RsvpSuccessResponse {
+  message: string;
+}
+// Fim das Interfaces
 
 type KidFG = {
   name: FormControl<string | null>;
@@ -18,7 +37,7 @@ type KidFG = {
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
+    ReactiveFormsModule, // Mantido aqui pois o formulário continua no AppComponent
     CountdownComponent,
     CarouselSwiperComponent,
     PetalsCanvasComponent
@@ -32,6 +51,7 @@ export class AppComponent implements OnInit {
   // Modais
   giftsOpen = false;
   rsvpOpen = false;
+  announcementOpen = false; // Novo: para o modal de comunicado importante
 
   // Formulário
   form: FormGroup<{
@@ -45,6 +65,11 @@ export class AppComponent implements OnInit {
   submitOk = false;
   submitError = false;
 
+  // Propriedades para o conteúdo dinâmico do modal de comunicado importante
+  announcementTitle: string = '<strong>(Comunicado Importante)</strong>';
+  announcementMessage: string = `Em razão do tema, indicamos o uso de tons <strong>(Terrosos, Rosa ou Verde)</strong> e solicitamos a gentileza de evitar o <strong>(Vermelho)</strong>, reservado à Aniversariante, a fim de preservar a harmonia visual do evento.`;
+
+
   // Injetamos o RsvpService no construtor
   constructor(private fb: FormBuilder, private rsvpService: RsvpService) {
     this.form = this.fb.group({
@@ -53,8 +78,17 @@ export class AppComponent implements OnInit {
       children: this.fb.array<FormGroup<KidFG>>([])
     });
 
-    // Limpa crianças se desmarcar
-    this.form.get("hasChildren")!.valueChanges.subscribe(v => { if (!v) this.children.clear(); });
+    // Limpa crianças se desmarcar 'hasChildren'
+    this.form.get("hasChildren")!.valueChanges.subscribe(v => {
+      if (!v) {
+        this.children.clear();
+      } else {
+        // Se 'hasChildren' for marcado e não houver crianças, adiciona um campo para UX
+        if (this.children.length === 0) {
+          this.addChild();
+        }
+      }
+    });
   }
 
   ngOnInit() {
@@ -128,8 +162,22 @@ export class AppComponent implements OnInit {
     this.submitError = false;
     this.isSubmitting = false;
     this.rsvpOpen = true;
+    this.announcementOpen = false; // Garante que o modal de comunicado esteja fechado ao abrir o RSVP
   }
-  closeRsvp() { this.rsvpOpen = false; }
+  closeRsvp() {
+    this.rsvpOpen = false;
+    this.form.reset({ name: null, hasChildren: false }); // Limpa o formulário ao fechar
+    this.children.clear(); // Limpa o FormArray de crianças
+  }
+
+  // Métodos para controlar o modal de Comunicado Importante.
+  openAnnouncementModal() {
+    this.rsvpOpen = false; // Fecha o modal de RSVP antes de abrir o comunicado
+    this.announcementOpen = true; // Abre o modal de comunicado
+  }
+  closeAnnouncementModal() {
+    this.announcementOpen = false;
+  }
 
   // Helpers de crianças (getter EXISTE!)
   get children(): FormArray<FormGroup<KidFG>> {
@@ -145,10 +193,20 @@ export class AppComponent implements OnInit {
   removeChild(i: number) { this.children.removeAt(i); }
 
   // Envio - ADAPTADO PARA USAR O SERVIÇO RSVP E ENVIAR DADOS COMPATÍVEIS COM O WORKER
-  submitRsvp() {
+  async submitRsvp() {
+    // Marca todos os controles como 'touched' para exibir mensagens de erro
+    this.form.markAllAsTouched();
+
+    // Validação adicional para garantir crianças se 'hasChildren' for true
+    if (this.form.get('hasChildren')?.value && this.children.length === 0) {
+      console.error('AppComponent: Se você trará crianças, adicione pelo menos uma.');
+      this.submitError = true; // Define o erro para feedback visual
+      return;
+    }
+
     if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.submitError = true; // Indicar erro de validação do formulário
+      console.error('AppComponent: Formulário inválido. Verifique os campos.');
+      this.submitError = true;
       return;
     }
 
@@ -157,34 +215,34 @@ export class AppComponent implements OnInit {
     this.submitError = false;
 
     const v = this.form.value;
-    const payload = {
-      fullName: (v.name || "").trim(), // Mapeia 'name' do formulário para 'fullName' do Worker
-      bringsChildren: !!v.hasChildren, // Mapeia 'hasChildren' para 'bringsChildren'
-      // ATENÇÃO: Os detalhes do array 'children' NÃO serão enviados ao Worker com a configuração atual.
-      // Se precisar armazená-los, o esquema do D1 e o código do Worker precisam ser estendidos.
+    const payload: AppRsvpPayload = { // Usando a interface AppRsvpPayload
+      fullName: (v.name || "").trim(),
+      bringsChildren: !!v.hasChildren,
+      // CORREÇÃO CRUCIAL: Incluir o array 'children' no payload
+      children: v.hasChildren ? (v.children as KidFrontend[] || []) : []
     };
 
-    this.rsvpService.submitRsvp(payload).subscribe({
-      next: (response: { message: string }) => { // <-- CORREÇÃO AQUI
-        // A API retorna um JSON com { message: '...' } em caso de sucesso
-        console.log("RSVP enviado com sucesso:", response.message);
-        this.submitOk = true;
-        this.submitError = false;
-        this.form.reset({ name: null, hasChildren: false }); // Limpa o formulário
-        this.children.clear(); // Limpa o FormArray de crianças
-        setTimeout(() => this.closeRsvp(), 1200); // Fecha o modal após um pequeno delay
-      },
-      error: (err: any) => { // <-- CORREÇÃO AQUI
-        console.error("Erro ao enviar RSVP:", err);
-        this.submitError = true;
-        this.submitOk = false;
-        // O erro do Worker pode vir em err.error?.error ou err.error?.details
-        // Você pode mostrar isso ao usuário se quiser:
-        // this.errorMessage = err.error?.error || err.error?.details || 'Falha ao enviar. Tente novamente.';
-      },
-      complete: () => {
-        this.isSubmitting = false; // Finaliza o estado de submissão
-      }
-    });
+    console.log('AppComponent Debug: Payload CONSTRUÍDO PARA O WORKER:', payload);
+
+    try {
+      // Usando firstValueFrom para transformar o Observable em Promise
+      const response: RsvpSuccessResponse = await firstValueFrom(this.rsvpService.submitRsvp(payload));
+      console.log("AppComponent: RSVP enviado com sucesso:", response.message);
+      this.submitOk = true;
+      this.submitError = false;
+      this.isSubmitting = false; // Desativa o estado de envio
+
+      // Fecha o modal de RSVP e abre o modal de comunicado após o sucesso
+      this.rsvpOpen = false; // Fechar o modal de RSVP explicitamente
+      this.openAnnouncementModal();
+
+    } catch (err: any) {
+      console.error("AppComponent: Erro ao enviar RSVP:", err);
+      this.submitError = true;
+      this.submitOk = false;
+      this.isSubmitting = false; // Desativa o estado de envio
+      const errorMessage = err.error?.error || err.error?.details || 'Falha ao enviar. Por favor, tente novamente.';
+      alert(`Erro ao confirmar RSVP: ${errorMessage}`);
+    }
   }
 }

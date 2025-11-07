@@ -15,7 +15,7 @@ git pull origin develop || true
 # adicionar mudanças
 git add -A
 
-git commit -m "feat(rsvp): Modal e API para Confirmação de Presença Ajustado"
+git commit -m "feat(rsvp): Modal e API para Confirmação de Presença, incluido cadastro das crianças em outra tabela"
 git push -u origin develop
 
 # ------------------------------ #
@@ -32,7 +32,7 @@ git fetch origin
 
 git checkout main
 git pull origin main
-git merge --no-ff develop -m "merge(develop) - (rsvp): Modal e API para Confirmação de Presença Ajustado"
+git merge --no-ff develop -m "merge(develop) - (rsvp): Modal e API para Confirmação de Presença, incluido cadastro das crianças em outra tabela"
 
 # publique
 git push origin main
