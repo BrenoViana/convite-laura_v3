@@ -26,7 +26,8 @@ export class RsvpBlockComponent {
 
   async send(){
     if (this.form.invalid) return;
-    await this.api.submit(this.form.value as any);
+    // await this.api.submit(this.form.value as any); // <-- LINHA INCORRETA
+    await this.api.submitRsvp(this.form.value as any).toPromise(); // <-- CORREÇÃO: Mude o nome do método e adicione .toPromise() para async/await com Observable
     this.form.reset({ attending: true, adults: 2 });
   }
 }

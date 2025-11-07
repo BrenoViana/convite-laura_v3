@@ -1,29 +1,31 @@
+// src/app/rsvp.service.ts
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
-export type Kid = { name: string; age: number };
-export type RsvpPayload = {
-  name: string;
-  attending: boolean;
-  adults: number;
-  hasCompanion?: boolean;
-  companionName?: string;
-  hasChildren?: boolean;
-  children?: Kid[] | number;
-  phone?: string;
-  message?: string;
-};
+// Defina uma interface para o objeto de RSVP que o Worker espera
+interface RsvpPayload {
+  fullName: string;
+  bringsChildren: boolean;
+}
 
-@Injectable({ providedIn: 'root' })
+// Interface para a resposta de sucesso do Worker
+interface RsvpSuccessResponse {
+  message: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
 export class RsvpService {
-  private base = '/api/rsvp';
+  // **IMPORTANTE**: Substitua esta URL pela URL do seu Worker + o path '/rsvp'
+  // Sua URL deployada é: https://convite-laura-rsvp-api.breno-viana.workers.dev
+  private workerUrl = 'https://convite-laura-rsvp-api.breno-viana.workers.dev/rsvp';
 
-  async submit(data: RsvpPayload): Promise<{ ok: boolean; id: string } | undefined> {
-    const r = await fetch(this.base, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
+  constructor(private http: HttpClient) { }
+
+  // Garanta que esta função submitRsvp esteja aqui e salva.
+  submitRsvp(data: RsvpPayload): Observable<RsvpSuccessResponse> {
+    return this.http.post<RsvpSuccessResponse>(this.workerUrl, data);
   }
 }
