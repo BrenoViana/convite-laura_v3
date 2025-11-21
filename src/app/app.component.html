@@ -35,7 +35,7 @@
       </div>
 
       <div class="row">
-        <div class="ico" aria-hidden="true">��</div>
+        <div class="ico" aria-hidden="true">📍</div>
         <div class="col">
           <div class="label">Local</div>
           <div class="address">
@@ -167,7 +167,6 @@
   </div>
 </div>
 
-<<<<<<< HEAD
 <!-- Modal: Confirmação -->
 <div class="modal-backdrop" *ngIf="ConfirOpen" (click)="closeConfir()"></div>
 <div class="modal" *ngIf="ConfirOpen" role="dialog" aria-modal="true" aria-labelledby="confirTitle">
@@ -233,16 +232,6 @@
         <!-- Melhoria UX: Microcopy do botão mais amigável. -->
         <button type="button" class="btn btn--primary" (click)="closeComun()">Entendi!</button>
       </div>
-=======
-<!-- Novo Modal: Comunicado Importante (exibido após RSVP ser confirmado) -->
-<div class="modal-backdrop" *ngIf="announcementOpen" (click)="closeAnnouncementModal()"></div>
-<div class="modal" *ngIf="announcementOpen" role="dialog" aria-modal="true" aria-labelledby="announcementTitle">
-  <div class="modal__content" (click)="$event.stopPropagation()">
-    <h2 id="announcementTitle" [innerHTML]="announcementTitle"></h2>
-    <p [innerHTML]="announcementMessage"></p>
-    <div class="modal__actions">
-      <button type="button" class="btn btn--primary" (click)="closeAnnouncementModal()" aria-label="Fechar comunicado">Entendi</button>
->>>>>>> 85008cd03382a6400bcab99eb26ef5918ac7ed92
     </div>
   </div>
 </div>

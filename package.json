@@ -23,8 +23,8 @@
     "zone.js": "^0.14.10"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^18.2.21",
-    "@angular/cli": "^18.2.21",
+    "@angular-devkit/build-angular": "^18.2.0",
+    "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^18.2.0",
     "@cloudflare/workers-types": "^4.20251014.0",
     "chokidar": "^3.6.0",
