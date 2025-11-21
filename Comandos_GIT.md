@@ -9,7 +9,11 @@ ng build --configuration production
 # Branch Develop
 
 # criar/sincronizar branch develop
-git checkout -b develop 2>/dev/null || git checkout develop
+# Rollback
+git checkout -b develop 2>/dev/null 
+
+# Checkout
+git checkout develop
 git pull origin develop || true
 
 # adicionar mudanças
