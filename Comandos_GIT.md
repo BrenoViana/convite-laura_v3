@@ -15,7 +15,7 @@ git pull origin develop || true
 # adicionar mudanças
 git add -A
 
-git commit -m "feat(rsvp + Confirmação + Comunicado): Criação de novos modais - "
+git commit -m "feat(rsvp): Correção na confirmação das Crianças."
 git push -u origin develop
 
 # ------------------------------ #
@@ -32,7 +32,7 @@ git fetch origin
 
 git checkout main
 git pull origin main
-git merge --no-ff develop -m "merge(develop) - (rsvp): Modal e API para Confirmação de Presença Ajustado"
+git merge --no-ff develop -m "merge(develop) - (rsvp): Correção na confirmação das Crianças."
 
 # publique
 git push origin main
@@ -40,5 +40,5 @@ git push origin main
 # ------------------------------ #
 
 # Tag #
-git tag -a v3.1.4 -m "(rsvp): Modal e API para Confirmação de Presença Ajustado"
-git push origin v3.1.4
+git tag -a v3.2.1 -m "(rsvp): Correção na confirmação das Crianças."
+git push origin v3.2.1

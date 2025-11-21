@@ -4,6 +4,8 @@ import { CommonModule } from "@angular/common";
 interface Petal {
   x: number; y: number; size: number; angle: number; spin: number;
   driftAmp: number; baseVY: number; vx: number;
+  scaleX: number;  // <<< Adicionado para simular o tombamento 3D
+  alpha: number;   // <<< Adicionado para transparência individual
 }
 
 @Component({
@@ -22,14 +24,12 @@ export class PetalsCanvasComponent implements AfterViewInit, OnDestroy {
   private petals: Petal[] = [];
   private dpr = 1;
 
-  /** transparência global das pétalas (0 = invisível, 1 = opaco) */
-  private alpha = 0.60;
+  // A transparência agora é por pétala, este valor pode ser removido.
 
   constructor(private zone: NgZone) {}
 
   ngAfterViewInit() {
     if (typeof window === "undefined") return;
-    // respeita prefers-reduced-motion
     if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const c = this.canvasRef.nativeElement;
@@ -76,10 +76,14 @@ export class PetalsCanvasComponent implements AfterViewInit, OnDestroy {
     return {
       x, y, size,
       angle: Math.random() * Math.PI * 2,
-      spin: (Math.random() * 0.8 - 0.4) * 0.6,
+      // <<< Aumenta um pouco a variedade de rotação
+      spin: (Math.random() * 1.2 - 0.6) * 0.8,
       driftAmp: -40 + Math.random() * 80,
       baseVY: 22 + Math.random() * 38,
-      vx: 0
+      vx: 0,
+      scaleX: 1, // <<< Inicializa a escala
+      // <<< Transparência aleatória para cada pétala (entre 0.4 e 0.9)
+      alpha: 0.4 + Math.random() * 0.5,
     };
   }
 
@@ -88,7 +92,7 @@ export class PetalsCanvasComponent implements AfterViewInit, OnDestroy {
   private loop = (ts: number) => {
     this.raf = requestAnimationFrame(this.loop);
     if (!this.last) this.last = ts;
-    const dt = Math.min(0.05, (ts - this.last) / 1000); // ~50ms cap
+    const dt = Math.min(0.05, (ts - this.last) / 1000);
     this.last = ts;
 
     const ctx = this.ctx, W = window.innerWidth, H = window.innerHeight;
@@ -97,6 +101,11 @@ export class PetalsCanvasComponent implements AfterViewInit, OnDestroy {
     const wind = this.wind(ts);
     for (const p of this.petals) {
       p.angle += p.spin * dt;
+
+      // <<< Calcula a escala horizontal para simular tombamento
+      // O multiplicador 2.5 faz a pétala "virar" mais rápido durante sua rotação
+      p.scaleX = Math.cos(p.angle * 2.5);
+
       const sway = Math.sin((ts / 1000) + p.y * 0.01) * p.driftAmp;
       p.vx = (wind + sway * 0.05) * dt;
 
@@ -114,25 +123,33 @@ export class PetalsCanvasComponent implements AfterViewInit, OnDestroy {
   private draw(p: Petal) {
     const ctx = this.ctx;
     ctx.save();
-    ctx.globalAlpha = this.alpha;                // << torna as pétalas mais translúcidas
     ctx.translate(p.x, p.y);
+    // <<< Aplica a escala horizontal ANTES de rotacionar
+    ctx.scale(p.scaleX, 1);
     ctx.rotate(p.angle);
 
+    // <<< Usa a transparência individual da pétala
+    ctx.globalAlpha = p.alpha;
+
     const s = p.size;
-    const g = ctx.createLinearGradient(-s, -s, s, s);
-    // cores suaves
-    g.addColorStop(0,  "#ffe1ea");
-    g.addColorStop(0.6,"#ffceda");
-    g.addColorStop(1,  "#ffb7c5");
+    // <<< Gradiente radial para um efeito de luz mais suave
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, s);
+    g.addColorStop(0, "#ffe1ea");
+    g.addColorStop(0.5, "#ffceda");
+    g.addColorStop(1, "#ffb7c5");
 
     ctx.fillStyle = g;
-    ctx.shadowColor = "rgba(213,106,134,0.12)"; // sombra bem leve
-    ctx.shadowBlur = 4;
+
+    // <<< Desfoque sutil e dependente do tamanho (pétalas menores = mais longe = mais desfocadas)
+    ctx.shadowColor = "rgba(213,106,134,0.12)";
+    ctx.shadowBlur = p.size < 14 ? 3 : 5;
 
     ctx.beginPath();
+    // <<< Desenho de uma forma mais orgânica e assimétrica
     ctx.moveTo(0, -0.5 * s);
-    ctx.bezierCurveTo(0.6 * s, -0.4 * s, 0.6 * s, 0.3 * s, 0, 0.5 * s);
-    ctx.bezierCurveTo(-0.6 * s, 0.3 * s, -0.6 * s, -0.4 * s, 0, -0.5 * s);
+    ctx.bezierCurveTo(s * 0.8, s * -0.4, s * 0.7, s * 0.3, 0, s * 0.5);
+    ctx.bezierCurveTo(s * -0.5, s * 0.3, s * -0.9, s * -0.2, 0, s * -0.5);
+
     ctx.closePath();
     ctx.fill();
 

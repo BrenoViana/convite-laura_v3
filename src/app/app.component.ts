@@ -8,6 +8,11 @@ import { CountdownComponent } from "./components/countdown/countdown.component";
 import { CarouselSwiperComponent } from "./components/carousel-swiper/carousel-swiper.component";
 import { PetalsCanvasComponent } from "./components/petals-canvas/petals-canvas.component";
 
+interface KidFrontend {
+  name: string;
+  age: number;
+}
+
 type KidFG = {
   name: FormControl<string | null>;
   age: FormControl<number | null>;
@@ -166,10 +171,12 @@ export class AppComponent implements OnInit {
     this.submitOk = false;
     this.submitError = false;
 
+
     const v = this.form.value;
     const payload = {
       fullName: (v.name || "").trim(), // Mapeia 'name' do formulário para 'fullName' do Worker
       bringsChildren: !!v.hasChildren, // Mapeia 'hasChildren' para 'bringsChildren'
+      children: v.hasChildren ? (v.children as KidFrontend[] || []) : []
       // ATENÇÃO: Os detalhes do array 'children' NÃO serão enviados ao Worker com a configuração atual.
       // Se precisar armazená-los, o esquema do D1 e o código do Worker precisam ser estendidos.
     };
