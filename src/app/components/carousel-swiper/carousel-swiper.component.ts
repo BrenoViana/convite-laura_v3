@@ -18,7 +18,8 @@ import { CommonModule } from '@angular/common';
     .sakura-swiper{position:relative; width:100%; height:100%; overflow:hidden}
     .slides{display:flex; width:100%; height:100%; transition:transform .5s ease}
     .slides img{flex:0 0 100%; width:100%; height:100%; object-fit:cover; display:block}
-    .nav{position:absolute; top:50%; transform:translateY(-50%); background:#ffffffcc; border:1px solid #ffd3df; border-radius:999px; width:32px;height:32px; display:grid;place-items:center; font-size:18px; cursor:pointer}
+    .nav{opacity: 50%;
+  color: #e44a83; position:absolute; top:50%; transform:translateY(-50%); background:#ffffffcc; border:1px solid #ffd3df; border-radius:999px; width:32px;height:32px; display:grid;place-items:center; font-size:18px; cursor:pointer}
     .nav.prev{left:8px}
     .nav.next{right:8px}
   `]

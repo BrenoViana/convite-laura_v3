@@ -32,6 +32,8 @@ export class AppComponent implements OnInit {
   // Modais
   giftsOpen = false;
   rsvpOpen = false;
+  ConfirOpen = false;
+  isComunOpen = false;
 
   // Formulário
   form: FormGroup<{
@@ -105,6 +107,14 @@ export class AppComponent implements OnInit {
   openGifts(e?: Event) { e?.preventDefault(); this.giftsOpen = true; }
   closeGifts() { this.giftsOpen = false; }
 
+  // Confirmação modal
+  openConfir(e?: Event) { e?.preventDefault(); this.ConfirOpen = true; }
+  closeConfir() { this.ConfirOpen = false; this.openComun(); }
+
+  // Comunicado modal
+  openComun(e?: Event) { e?.preventDefault(); this.isComunOpen = true; }
+  closeComun() { this.isComunOpen = false; }
+
   async copyAddress() {
     const address = "Rua Treze de Maio, 300 – São Luiz, Antônio Prado/RS | 95250-000";
     try {
@@ -172,7 +182,8 @@ export class AppComponent implements OnInit {
         this.submitError = false;
         this.form.reset({ name: null, hasChildren: false }); // Limpa o formulário
         this.children.clear(); // Limpa o FormArray de crianças
-        setTimeout(() => this.closeRsvp(), 1200); // Fecha o modal após um pequeno delay
+        setTimeout(() => this.closeRsvp(), 2000);// Fecha o modal após um pequeno delay
+        this.openConfir(); // Abre o modal de confirmação
       },
       error: (err: any) => { // <-- CORREÇÃO AQUI
         console.error("Erro ao enviar RSVP:", err);
