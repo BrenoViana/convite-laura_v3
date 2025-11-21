@@ -329,3 +329,148 @@ input[type="number"] {
 .form-row.switch > span strong {
   font-weight: 800;
 }
+
+.footnote {
+  display: block;
+  font-size: 16px;
+  color: #7d5465;
+  margin-top: 16px;
+  text-align: center;
+}
+
+
+/* --- Estilos para o Switcher (Toggle Switch) --- */
+
+/* Contêiner para alinhar o texto e o switch */
+.form-row-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Espaço entre o texto e o switch */
+}
+
+.switch-label {
+  font-family: sans-serif; /* Use a fonte do seu projeto */
+  color: #333; /* Cor do texto */
+}
+
+/* O contêiner principal do switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;  /* Largura do switch */
+  height: 28px; /* Altura do switch */
+}
+
+/* Esconde o checkbox padrão do navegador */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* A base do switch (a "pista" onde o círculo desliza) */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc; /* Cor do fundo quando desligado */
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 28px; /* Deixa as bordas arredondadas */
+}
+
+/* O círculo que desliza */
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px; /* Altura do círculo */
+  width: 20px;  /* Largura do círculo */
+  left: 4px;    /* Posição inicial (desligado) */
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 50%; /* Transforma em círculo */
+}
+
+/* Estilos para quando o switch está LIGADO (checked) */
+input:checked + .slider {
+  background-color: #e44a83; /* Cor de fundo verde quando ligado */
+}
+
+input:checked + .slider:before {
+  /* Move o círculo para a direita */
+  -webkit-transform: translateX(22px);
+  -ms-transform: translateX(22px);
+  transform: translateX(22px);
+}
+
+
+
+/* Estilo para o botão de fechar 'X' */
+.modal__close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 2rem; /* Tamanho grande para ser fácil de clicar */
+  line-height: 1;
+  color: #888;
+  cursor: pointer;
+  padding: 0;
+}
+
+.modal__close-btn:hover {
+  color: #333;
+}
+
+/* Classe para destacar o texto em vermelho */
+.text-highlight-red {
+  color: #E74C3C; /* Um tom de vermelho menos agressivo que o 'red' padrão */
+  font-weight: bold;
+}
+
+/* Estilo para a lista de cores (opcional, para melhorar a aparência) */
+.color-list {
+  list-style-type: '🌸'; /* Usando um emoji como marcador! */
+  padding-left: 25px;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.color-list li {
+  padding-left: 10px;
+  margin-bottom: 5px;
+}
+
+/* CSS */
+.icon-button {
+  /* Reset básico do botão */
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  /* Cor do ícone - aqui entra sua cor! */
+  color: #e44a83;
+
+  /* Alinhamento e transição */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+.icon-button:hover,
+.icon-button:focus {
+  opacity: 0.7; /* Efeito sutil ao passar o mouse ou focar */
+}
+
+/* Garante que o SVG herde a cor do botão */
+.icon-button svg {
+  stroke: currentColor;
+}

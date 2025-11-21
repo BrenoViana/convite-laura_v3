@@ -44,6 +44,14 @@
             <span *ngIf="venue" class="venue-pill">{{ venue }}</span>
           </div>
         </div>
+        <button class="icon-button" aria-label="Mais informações" (click)="openComun($event)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </button>
       </div>
     </section>
 
@@ -56,6 +64,10 @@
 
       <!-- abre modal de RSVP -->
       <a class="btn btn--primary" href="#" (click)="openRsvp($event)">Confirmar presença</a>
+
+      <!-- <a class="btn" href="#" (click)="openConfir($event)">Confirmação</a>
+
+      <a class="btn" href="#" (click)="openComun($event)">Comunicado</a> -->
     </section>
 
     <footer class="footnote">
@@ -66,9 +78,9 @@
 
 <!-- Modal: Sugestão de presentes -->
 <div class="modal-backdrop" *ngIf="giftsOpen" (click)="closeGifts()"></div>
-<div class="modal" *ngIf="giftsOpen" role="dialog" aria-modal="true" aria-labelledby="giftTitle">
+<div class="modal " *ngIf="giftsOpen" role="dialog" aria-modal="true" aria-labelledby="giftTitle">
   <div class="modal__content" (click)="$event.stopPropagation()">
-    <h2 id="giftTitle">🍒 A cereja do bolo!</h2>
+    <h2 class="title" id="giftTitle">🍒 A cereja do bolo!</h2>
     <p>Nossa cerejinha está crescendo rápido e deixando tudo mais doce! 🌸💕</p>
     <p>
       Se quiser presentear com algum brinquedo, sugerimos comprar online e enviar direto para o nosso endereço —
@@ -94,8 +106,9 @@
 <div class="modal-backdrop" *ngIf="rsvpOpen" (click)="closeRsvp()"></div>
 <div class="modal" *ngIf="rsvpOpen" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
   <div class="modal__content" (click)="$event.stopPropagation()">
-    <h2 id="rsvpTitle">Confirmar Presença</h2>
-
+    <h2 class="title" id="rsvpTitle">Confirmar Presença</h2>
+    <br />
+    <br />
     <form class="modal__body" [formGroup]="form" (ngSubmit)="submitRsvp()">
       <!-- Nome -->
       <label class="form-row">
@@ -107,10 +120,20 @@
       </label>
 
       <!-- Crianças -->
-      <label class="form-row switch">
-        <input type="checkbox" formControlName="hasChildren" />
+      <div class="form-row-switch">
+        <!-- O texto da label -->
+        <span class="switch-label"><strong>Levará crianças?</strong></span>
+
+        <!-- O componente do switch -->
+        <label class="switch">
+          <input type="checkbox" formControlName="hasChildren" />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <!-- <label class="form-row switch">
+        <input class="form-check-input" type="checkbox" formControlName="hasChildren" />
         <span><strong>Levará crianças?</strong></span>
-      </label>
+      </label> -->
 
       <div class="kids" *ngIf="form.get('hasChildren')?.value">
         <div class="kid-row" *ngFor="let kid of children.controls; let i = index" [formGroup]="kid">
@@ -128,10 +151,81 @@
       <div class="status ok" *ngIf="submitOk">Presença registrada. Obrigado! 🎉</div>
       <div class="status err" *ngIf="submitError">Falha ao enviar. Tente novamente.</div>
 
+
+
       <div class="modal__actions">
         <button type="button" class="btn" (click)="closeRsvp()" [disabled]="isSubmitting">Cancelar</button>
         <button type="submit" class="btn btn--primary" [disabled]="form.invalid || isSubmitting">Confirmar</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Modal: Confirmação -->
+<div class="modal-backdrop" *ngIf="ConfirOpen" (click)="closeConfir()"></div>
+<div class="modal" *ngIf="ConfirOpen" role="dialog" aria-modal="true" aria-labelledby="confirTitle">
+  <div class="modal__content" (click)="$event.stopPropagation()">
+    <h2 class="title" id="confirTitle">🎉 Presença Confirmada!</h2>
+    <p>Estamos contando os dias para celebrar junto com as pessoas que ela mais ama, e você é uma delas. Saber que você
+      vem deixou nosso coração em festa!</p>
+    <p>Obrigado por aceitar nosso convite e por vir compartilhar essa alegria com a gente.</p>
+    <p><strong>Sua presença é o melhor presente!</strong></p>
+    <br>
+    <p class="footnote">A contagem regressiva para a diversão começou! ✨</p>
+    <div class="modal__actions">
+      <button type="button" class="btn btn--primary" (click)="closeConfir()">OK</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal: Comunicado -->
+
+<!--
+  Melhoria: Adicionado keydown.escape para fechar o modal com a tecla Esc.
+  Este evento é colocado no container mais externo para capturar o evento globalmente quando o modal está visível.
+-->
+<div (keydown.escape)="closeComun()">
+
+  <div class="modal-backdrop" *ngIf="isComunOpen" (click)="closeComun()"></div>
+
+  <!--
+    Melhoria: Adicionado aria-describedby para acessibilidade.
+    Ele aponta para o ID do parágrafo principal, ajudando leitores de tela.
+  -->
+  <div class="modal" *ngIf="isComunOpen" role="dialog" aria-modal="true" aria-labelledby="comunTitle"
+    aria-describedby="comunDesc">
+    <div class="modal__content" (click)="$event.stopPropagation()">
+
+      <!-- Melhoria UX: Adicionado um botão 'X' para fechar. -->
+      <button type="button" class="modal__close-btn" aria-label="Fechar comunicado"
+        (click)="closeComun()">&times;</button>
+
+      <h2 class="title" id="comunTitle">Um Toque Sobre o Traje</h2>
+
+      <div id="comunDesc">
+        <p>Para florirmos juntos neste dia especial, gostaríamos de criar um lindo jardim de cerejeiras com a ajuda de
+          vocês!</p>
+
+        <p><strong>Nossa sugestão de cores são:</strong></p>
+        <!-- Melhoria UI: Usar uma lista torna a informação mais fácil de escanear. -->
+        <ul class="color-list">
+          <li>Tons Terrosos</li>
+          <li>Rosa</li>
+          <li>Verde</li>
+        </ul>
+
+        <p>Para que nossa flor principal, a aniversariante Laura, tenha seu brilho único, pedimos com carinho que a cor
+          <!-- Melhoria de Código: Usando uma classe em vez de estilo inline. -->
+          <strong class="text-highlight-red">VERMELHA</strong>
+          seja reservada para ela.
+        </p>
+      </div>
+
+      <div class="modal__actions">
+        <!-- Melhoria UX: Microcopy do botão mais amigável. -->
+        <button type="button" class="btn btn--primary" (click)="closeComun()">Entendi!</button>
+      </div>
+    </div>
   </div>
 </div>

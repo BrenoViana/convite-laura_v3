@@ -15,7 +15,7 @@ git pull origin develop || true
 # adicionar mudanças
 git add -A
 
-git commit -m "feat(rsvp): Modal e API para Confirmação de Presença Ajustado"
+git commit -m "feat(rsvp + Confirmação + Comunicado): Criação de novos modais - Confirmação e Comunicado"
 git push -u origin develop
 
 # ------------------------------ #
