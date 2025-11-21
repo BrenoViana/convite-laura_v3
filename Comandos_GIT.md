@@ -15,7 +15,7 @@ git pull origin develop || true
 # adicionar mudanças
 git add -A
 
-git commit -m "feat(rsvp + Confirmação + Comunicado): Criação de novos modais - Confirmação e Comunicado"
+git commit -m "feat(rsvp + Confirmação + Comunicado): Criação de novos modais - "
 git push -u origin develop
 
 # ------------------------------ #
